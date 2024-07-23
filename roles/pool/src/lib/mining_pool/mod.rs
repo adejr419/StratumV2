@@ -200,11 +200,11 @@ impl Downstream {
     }
 
     pub async fn next(self_mutex: Arc<Mutex<Self>>, mut incoming: StdFrame) -> PoolResult<()> {
-        let message_type = incoming
-            .get_header()
-            .ok_or_else(|| PoolError::Custom(String::from("No header set")))?
-            .msg_type();
-        let payload = incoming.payload();
+        let message_type = incoming.header().msg_type();
+        let payload = match incoming.payload() {
+            Some(p) => p,
+            None => return Err(PoolError::Custom(String::from("No payload set"))),
+        };
         debug!(
             "Received downstream message type: {:?}, payload: {:?}",
             message_type, payload

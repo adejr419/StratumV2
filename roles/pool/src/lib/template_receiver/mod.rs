@@ -108,11 +108,14 @@ impl TemplateRx {
                     .try_into()
                     .map_err(|e| PoolError::Codec(codec_sv2::Error::FramingSv2Error(e)))
             );
-            let message_type_res = message_from_tp
-                .get_header()
-                .ok_or_else(|| PoolError::Custom(String::from("No header set")));
-            let message_type = handle_result!(status_tx, message_type_res).msg_type();
-            let payload = message_from_tp.payload();
+            let message_type = message_from_tp.header().msg_type();
+            let payload = match message_from_tp.payload() {
+                Some(p) => p,
+                None => {
+                    let err = PoolError::Custom(String::from("No payload set"));
+                    handle_result!(status_tx, Err(err))
+                }
+            };
             let msg = handle_result!(
                 status_tx,
                 ParseServerTemplateDistributionMessages::handle_message_template_distribution(

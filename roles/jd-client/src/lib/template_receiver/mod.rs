@@ -186,8 +186,8 @@ impl TemplateRx {
                     let received = handle_result!(tx_status.clone(), receiver.recv().await);
                     let mut frame: StdFrame =
                         handle_result!(tx_status.clone(), received.try_into());
-                    let message_type = frame.get_header().unwrap().msg_type();
-                    let payload = frame.payload();
+                    let message_type = frame.header().msg_type();
+                    let payload = frame.payload().expect("No payload set");
 
                     let next_message_to_send =
                         ParseServerTemplateDistributionMessages::handle_message_template_distribution(
@@ -273,7 +273,7 @@ impl TemplateRx {
                                 _ => {
                                     error!("{:?}", frame);
                                     error!("{:?}", frame.payload());
-                                    error!("{:?}", frame.get_header());
+                                    error!("{:?}", frame.header());
                                     std::process::exit(1);
                                 }
                             }
@@ -282,14 +282,14 @@ impl TemplateRx {
                             error!("{:?}", m);
                             error!("{:?}", frame);
                             error!("{:?}", frame.payload());
-                            error!("{:?}", frame.get_header());
+                            error!("{:?}", frame.header());
                             std::process::exit(1);
                         }
                         Err(e) => {
                             error!("{:?}", e);
                             error!("{:?}", frame);
                             error!("{:?}", frame.payload());
-                            error!("{:?}", frame.get_header());
+                            error!("{:?}", frame.header());
                             std::process::exit(1);
                         }
                     }
