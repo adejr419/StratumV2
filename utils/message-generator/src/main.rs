@@ -659,10 +659,10 @@ mod test {
         let client_received = client_recv.recv().await.unwrap();
         match (server_received, client_received) {
             (EitherFrame::Sv2(mut frame1), EitherFrame::Sv2(mut frame2)) => {
-                let mt1 = frame1.get_header().unwrap().msg_type();
-                let mt2 = frame2.get_header().unwrap().msg_type();
-                let p1 = frame1.payload();
-                let p2 = frame2.payload();
+                let mt1 = frame1.header().msg_type();
+                let mt2 = frame2.header().msg_type();
+                let p1 = frame1.payload().unwrap();
+                let p2 = frame2.payload().unwrap();
                 let message1: Mining = (mt1, p1).try_into().unwrap();
                 let message2: Mining = (mt2, p2).try_into().unwrap();
                 match (message1, message2) {

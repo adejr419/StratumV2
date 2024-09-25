@@ -53,8 +53,8 @@ impl SetupConnectionHandler {
             .expect("Connection to TP closed!")
             .try_into()
             .expect("Failed to parse incoming SetupConnectionResponse");
-        let message_type = incoming.get_header().unwrap().msg_type();
-        let payload = incoming.payload();
+        let message_type = incoming.header().msg_type();
+        let payload = incoming.payload().unwrap();
         ParseUpstreamCommonMessages::handle_message_common(
             Arc::new(Mutex::new(SetupConnectionHandler {})),
             message_type,

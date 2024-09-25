@@ -231,13 +231,14 @@ impl Upstream {
         };
 
         // Gets the binary frame message type from the message header
-        let message_type = if let Some(header) = incoming.get_header() {
-            header.msg_type()
-        } else {
-            return Err(framing_sv2::Error::ExpectedHandshakeFrame.into());
-        };
+        let message_type = incoming.header().msg_type();
         // Gets the message payload
-        let payload = incoming.payload();
+        let payload = match incoming.payload() {
+            Some(payload) => payload,
+            None => {
+                return Err(framing_sv2::Error::ExpectedHandshakeFrame.into());
+            }
+        };
 
         // Handle the incoming message (should be either `SetupConnectionSuccess` or
         // `SetupConnectionError`)
@@ -324,16 +325,9 @@ impl Upstream {
                     let mut incoming: StdFrame = handle_result!(tx_status, incoming.try_into());
                     // On message receive, get the message type from the message header and get the
                     // message payload
-                    let message_type =
-                        incoming
-                            .get_header()
-                            .ok_or(super::super::error::Error::FramingSv2(
-                                framing_sv2::Error::ExpectedSv2Frame,
-                            ));
+                    let message_type = incoming.header().msg_type();
 
-                    let message_type = handle_result!(tx_status, message_type).msg_type();
-
-                    let payload = incoming.payload();
+                    let payload = incoming.payload().expect("Payload not found");
 
                     // Since this is not communicating with an SV2 proxy, but instead a custom SV1
                     // proxy where the routing logic is handled via the `Upstream`'s communication
