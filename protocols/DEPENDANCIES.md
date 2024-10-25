@@ -26,14 +26,14 @@ stateDiagram-v2
     tracing --> binary_sv2
 
     serde --> framing_sv2: with_serde
-    const_sv2 --> framing_sv2
-    binary_sv2 --> framing_sv2
     buffer_sv2 --> framing_sv2: with_buffer_pool
+    binary_sv2 --> framing_sv2
+    const_sv2 --> framing_sv2
 
     serde --> codec_sv2: with_serde
     framing_sv2 --> codec_sv2
-    noise_sv2 --> codec_sv2: noise_sv2
     binary_sv2 --> codec_sv2
+    noise_sv2 --> codec_sv2: noise_sv2
     const_sv2 --> codec_sv2
     buffer_sv2 --> codec_sv2
     tracing --> codec_sv2
