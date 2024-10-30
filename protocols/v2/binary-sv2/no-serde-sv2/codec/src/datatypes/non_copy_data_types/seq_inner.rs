@@ -1,3 +1,54 @@
+//! # Sequence and Optional Data Structures
+//!
+//! This module provides specialized implementations of sequences and optional data types, primarily
+//! designed to handle serialized data with fixed size constraints. These structures are particularly
+//! suited for encoding and decoding variable-length and optional data fields within serialized
+//! formats.
+//!
+//! ## Provided Types
+//!
+//! ### `Seq0255`
+//! - Represents a sequence of up to 255 elements.
+//! - Includes utility methods such as:
+//!   - `to_vec()`: Converts each element into its byte vector representation.
+//!   - `inner_as_ref()`: Provides references to the inner data for each element.
+//!   - `new()`: Creates a `Seq0255` instance, enforcing the maximum length constraint.
+//! - Implements the `Decodable` trait for seamless deserialization, and `GetSize` to calculate the
+//!   encoded size, ensuring compatibility with various serialization formats.
+//!
+//! ### `Seq064K`
+//! - Represents a sequence of up to 65535 elements.
+//! - Similar to `Seq0255`, it provides:
+//!   - `to_vec()` and `inner_as_ref()` methods to convert or reference each element.
+//!   - `new()` enforces the maximum size limit, preventing excess memory usage.
+//! - Like `Seq0255`, `Seq064K` is `Decodable` and implements `GetSize`, making it versatile for
+//!   serialization scenarios.
+//!
+//! ### `Sv2Option`
+//! - Represents an optional data type, encoding a single or absent element.
+//! - Provides `to_option()` to convert to a standard `Option<Vec<u8>>`.
+//! - `new()` and `into_inner()` enable flexible conversions between `Option` and `Sv2Option`.
+//!
+//! ## Utility Macros
+//!
+//! - `impl_codec_for_sequence!`: Implements the `Decodable` trait for a sequence type, allowing
+//!   for a custom deserialization process that interprets field markers.
+//! - `impl_into_encodable_field_for_seq!`: Implements conversions to `EncodableField` for a
+//!   sequence, adapting the sequence for inclusion in serialized structures.
+//!
+//! ## Notes on Serialization
+//!
+//! This module's types are designed to interoperate with the `serde-sv2` framework, using lifetimes
+//! (`'a`) for compatibility with external lifetimes and ensuring the types can be converted into
+//! various serialized forms with or without `serde` support.
+//!
+//! ## Feature Flags
+//!
+//! - `prop_test`: Enables property-based testing compatibility by implementing `TryFrom` for `Vec`
+//!   conversions.
+//! - `no_std`: Allows the module to be used in `no_std` environments by disabling `std::io::Read`
+//!   dependencies.
+
 use crate::{
     codec::{
         decodable::{Decodable, DecodableField, FieldMarker, GetMarker, PrimitiveMarker},
@@ -55,7 +106,9 @@ impl<'a, const SIZE: usize> Seq064K<'a, super::inner::Inner<'a, true, SIZE, 0, 0
 #[cfg(not(feature = "no_std"))]
 use std::io::Read;
 
-/// The liftime is here only for type compatibility with serde-sv2
+/// `Seq0255` represents a sequence of items with a maximum length of 255 elements.
+/// This structure uses a generic type `T` and a lifetime parameter `'a`
+/// to ensure compatibility with `serde-sv2`.
 #[repr(C)]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Seq0255<'a, T>(pub Vec<T>, PhantomData<&'a T>);
@@ -63,7 +116,7 @@ pub struct Seq0255<'a, T>(pub Vec<T>, PhantomData<&'a T>);
 impl<'a, T: 'a> Seq0255<'a, T> {
     const HEADERSIZE: usize = 1;
 
-    /// Return the len of the inner vector
+    // Determines the expected length of the sequence by examining the first byte of `data`.
     fn expected_len(data: &[u8]) -> Result<usize, Error> {
         if data.len() >= Self::HEADERSIZE {
             Ok(data[0] as usize)
@@ -72,6 +125,7 @@ impl<'a, T: 'a> Seq0255<'a, T> {
         }
     }
 
+    // Creates a new `Seq0255` instance with the given inner vector.
     pub fn new(inner: Vec<T>) -> Result<Self, Error> {
         if inner.len() <= 255 {
             Ok(Self(inner, PhantomData))
@@ -80,12 +134,14 @@ impl<'a, T: 'a> Seq0255<'a, T> {
         }
     }
 
+    // Consumes the `Seq0255` and returns the inner vector of elements.
     pub fn into_inner(self) -> Vec<T> {
         self.0
     }
 }
 
 impl<'a, T: GetSize> GetSize for Seq0255<'a, T> {
+    // Calculates the total size of the sequence in bytes.
     fn get_size(&self) -> usize {
         let mut size = Self::HEADERSIZE;
         for with_size in &self.0 {
@@ -95,14 +151,16 @@ impl<'a, T: GetSize> GetSize for Seq0255<'a, T> {
     }
 }
 
-/// The liftime is here only for type compatibility with serde-sv2
+/// `Seq064K` represents a sequence of items with a maximum length of 65535 elements.
+/// This structure uses a generic type `T` and a lifetime parameter `'a`
+/// to ensure compatibility with `serde-sv2`.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Seq064K<'a, T>(pub(crate) Vec<T>, PhantomData<&'a T>);
 
 impl<'a, T: 'a> Seq064K<'a, T> {
     const HEADERSIZE: usize = 2;
 
-    /// Return the len of the inner vector
+    // Determines the expected length of the sequence by examining the first two bytes of `data`.
     fn expected_len(data: &[u8]) -> Result<usize, Error> {
         if data.len() >= Self::HEADERSIZE {
             Ok(u16::from_le_bytes([data[0], data[1]]) as usize)
@@ -111,6 +169,7 @@ impl<'a, T: 'a> Seq064K<'a, T> {
         }
     }
 
+    // Creates a new `Seq064K` instance with the given inner vector.
     pub fn new(inner: Vec<T>) -> Result<Self, Error> {
         if inner.len() <= 65535 {
             Ok(Self(inner, PhantomData))
@@ -119,12 +178,14 @@ impl<'a, T: 'a> Seq064K<'a, T> {
         }
     }
 
+    // Consumes the `Seq064K` and returns the inner vector of elements.
     pub fn into_inner(self) -> Vec<T> {
         self.0
     }
 }
 
 impl<'a, T: GetSize> GetSize for Seq064K<'a, T> {
+    // Calculates the total size of the sequence in bytes.
     fn get_size(&self) -> usize {
         let mut size = Self::HEADERSIZE;
         for with_size in &self.0 {
@@ -134,6 +195,7 @@ impl<'a, T: GetSize> GetSize for Seq064K<'a, T> {
     }
 }
 
+/// Macro to implement encoding and decoding traits for sequence types (`Seq0255`, `Seq064K`, and `Sv2Option`).
 macro_rules! impl_codec_for_sequence {
     ($a:ty) => {
         impl<'a, T: 'a + Sv2DataType<'a> + GetMarker + GetSize + Decodable<'a>> Decodable<'a>
@@ -210,10 +272,14 @@ macro_rules! impl_codec_for_sequence {
     };
 }
 
+// Implementations for encoding/decoding
 impl_codec_for_sequence!(Seq0255<'a, T>);
 impl_codec_for_sequence!(Seq064K<'a, T>);
 impl_codec_for_sequence!(Sv2Option<'a, T>);
 
+/// The `impl_into_encodable_field_for_seq` macro provides implementations of the `From` trait
+/// to convert `Seq0255`, `Seq064K`, and `Sv2Option` types into `EncodableField`, making these
+/// sequence types compatible with encoding.
 macro_rules! impl_into_encodable_field_for_seq {
     ($a:ty) => {
         impl<'a> From<Seq064K<'a, $a>> for EncodableField<'a> {
