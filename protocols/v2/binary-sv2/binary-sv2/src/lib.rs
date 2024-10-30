@@ -1,4 +1,46 @@
-// TODO unify errors from serde_sv2 and no-serde-sv2
+//! This crate serves as a mediator for two distinct implementations of the `binary_sv2` protocol
+//! encoding and decoding functionality, one using `serde` and the other relying on custom traits
+//! without `serde`.
+//!
+//! # Overview
+//!
+//! Depending on the feature flags enabled, this crate will re-export implementations of the
+//! `Deserialize` and `Serialize` traits either from the `serde` library or from a custom,
+//! `serde`-free implementation provided by `binary_codec_sv2` and `derive_codec_sv2`. This allows
+//! for flexible integration of SV2 protocol types and binary serialization for environments that
+//! may not support `serde`.
+//!
+//! ## Features
+//! - **with_serde**: Enables `serde`-based serialization and deserialization for SV2 types,
+//!   using `serde` and `serde_sv2`.
+//! - **core**: Enables the custom `binary_codec_sv2` and `derive_codec_sv2` implementations,
+//!   which provide `Deserialize` and `Serialize` traits without the need for `serde`.
+//! - **prop_test**: Adds support for property testing for protocol types.
+//! - **with_buffer_pool**: Enables support for buffer pooling to optimize memory usage during
+//!   serialization and deserialization.
+//!
+//! ## Key Functions
+//!
+//! - `clone_message`: A utility function designed to clone messages of any type that implements
+//!   `Serialize`. This function is currently a placeholder and will be implemented to allow deep
+//!   cloning of SV2 protocol messages.
+//! - `u256_from_int`: Constructs a 256-bit unsigned integer (`U256`) from any 64-bit integer
+//!   input. The resulting `U256` type aligns with SV2 protocol requirements, facilitating
+//!   compatibility with larger data structures.
+//!
+//! ## Modules and Re-exports
+//! - `copy_data_types`: Contains SV2 protocol types with fixed sizes.
+//! - `non_copy_data_types`: Defines dynamically-sized SV2 types, such as sequences, strings, and
+//!   optional values, supporting both `serde` and non-`serde` implementations based on feature flags.
+//!
+//! ## Testing
+//! Unit tests verify encoding and decoding of sample structures and various SV2 data types,
+//! ensuring compatibility across different feature sets. The `test` module provides comprehensive
+//! checks for fixed and dynamically-sized data.
+//!
+//! This design supports versatile SV2 protocol integration in varied Rust environments, offering
+//! serialization choices that best suit the use case and system constraints.
+
 
 #![no_std]
 
