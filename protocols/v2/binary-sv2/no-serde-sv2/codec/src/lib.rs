@@ -1,16 +1,28 @@
+//! This module defines types, encodings, and conversions between Serde and SV2 protocols,
+//! providing abstractions to facilitate encoding, decoding, and error handling of SV2 data types.
+//!
+//! # Overview
+//!
+//! SV2 (Stratum V2) is a protocol used in cryptocurrency mining pools. This module allows the conversion
+//! between various Rust types and SV2-specific data formats, which are used for efficient network communication.
+//! It also provides utilities to encode and decode data types according to the SV2 specifications.
+//!
+//! ## Type Mappings
+//! The following table illustrates how standard Rust types map to their SV2 counterparts:
+//!
 //! ```txt
 //! SERDE    <-> Sv2
 //! bool     <-> BOOL
 //! u8       <-> U8
 //! u16      <-> U16
 //! U24      <-> U24
-//! u32      <-> u32
-//! f32      <-> f32 // not in the spec but used
-//! u64      <-> u64 // not in the spec but used
+//! u32      <-> U32
+//! f32      <-> F32     // Not in the spec, but used
+//! u64      <-> U64     // Not in the spec, but used
 //! U256     <-> U256
 //! Str0255  <-> STRO_255
 //! Signature<-> SIGNATURE
-//! B032     <-> B0_32 // not in the spec but used
+//! B032     <-> B0_32   // Not in the spec, but used
 //! B0255    <-> B0_255
 //! B064K    <-> B0_64K
 //! B016M    <-> B0_16M
@@ -19,6 +31,47 @@
 //! Seq0255  <-> SEQ0_255[T]
 //! Seq064K  <-> SEQ0_64K[T]
 //! ```
+//!
+//! # Encoding & Decoding
+//!
+//! The module provides functions to encode and decode data types using the SV2 encoding scheme. This is critical for ensuring
+//! that data is correctly serialized for communication over the network.
+//!
+//! - **to_bytes**: Encodes an SV2 data type into a byte vector.
+//! - **to_writer**: Encodes an SV2 data type into a byte slice.
+//! - **from_bytes**: Decodes an SV2-encoded byte slice into the specified data type.
+//!
+//! # Error Handling
+//!
+//! The module defines an `Error` enum for handling various failure conditions during encoding, decoding, and data manipulation.
+//! Common errors include:
+//! - Out of bounds accesses
+//! - Size mismatches during encoding/decoding
+//! - Invalid data representations (e.g., non-boolean values interpreted as booleans)
+//!
+//! # Cross-Language Interoperability
+//!
+//! To support foreign function interface (FFI) use cases, the module includes `CError` and `CVec` types that represent SV2 data and errors in a format
+//! suitable for cross-language compatibility.
+//!
+//! # Features
+//!
+//! The module supports optional features like `no_std` for environments without standard library support. Error types are conditionally compiled
+//! to work with or without `std`.
+//!
+//! ## Conditional Compilation
+//! - When the `no_std` feature is enabled, I/O-related errors use a simplified `IoError` representation.
+//! - Standard I/O errors (`std::io::Error`) are used when `no_std` is disabled.
+//!
+//! # FFI Interoperability
+//!
+//! This module provides several utilities for FFI (Foreign Function Interface) to facilitate the passing of data between Rust and other languages.
+//! These utilities include:
+//! - `CVec`: A representation of a byte vector that can be safely passed between C and Rust.
+//! - `CError`: A C-compatible version of the error type.
+//! - `CVec2`: A struct to manage collections of `CVec` objects across FFI boundaries.
+//!
+//! These structures allow easy integration of SV2-related functionality into cross-language projects.
 
 #![cfg_attr(feature = "no_std", no_std)]
 
@@ -40,6 +93,7 @@ pub use crate::codec::{
 
 use alloc::vec::Vec;
 
+/// Converts the provided SV2 data type to a byte vector based on the SV2 encoding format.
 #[allow(clippy::wrong_self_convention)]
 pub fn to_bytes<T: Encodable + GetSize>(src: T) -> Result<Vec<u8>, Error> {
     let mut result = vec![0_u8; src.get_size()];
@@ -47,12 +101,14 @@ pub fn to_bytes<T: Encodable + GetSize>(src: T) -> Result<Vec<u8>, Error> {
     Ok(result)
 }
 
+/// Encodes the SV2 data type to the provided byte slice.
 #[allow(clippy::wrong_self_convention)]
 pub fn to_writer<T: Encodable>(src: T, dst: &mut [u8]) -> Result<(), Error> {
     src.to_bytes(dst)?;
     Ok(())
 }
 
+/// Decodes an SV2-encoded byte slice into the specified data type.
 pub fn from_bytes<'a, T: Decodable<'a>>(data: &'a mut [u8]) -> Result<T, Error> {
     T::from_bytes(data)
 }
@@ -69,6 +125,30 @@ pub mod encodable {
 #[macro_use]
 extern crate alloc;
 
+/// Error types used within the protocol library to indicate various failure conditions.
+///
+/// - `OutOfBound`: Indicates an attempt to read beyond a valid range.
+/// - `NotABool(u8)`: Raised when a non-binary value is interpreted as a boolean.
+/// - `WriteError(usize, usize)`: Occurs when an unexpected size mismatch arises during a write operation, specifying expected and actual sizes.
+/// - `U24TooBig(u32)`: Signifies an overflow condition where a `u32` exceeds the maximum allowable `u24` value.
+/// - `InvalidSignatureSize(usize)`: Reports a size mismatch for a signature, such as when it does not match the expected size.
+/// - `InvalidU256(usize)`: Raised when a `u256` value is invalid, typically due to size discrepancies.
+/// - `InvalidU24(u32)`: Indicates an invalid `u24` representation.
+/// - `InvalidB0255Size(usize)`, `InvalidB064KSize(usize)`, `InvalidB016MSize(usize)`: Indicate that a byte array exceeds the maximum allowed size for `B0255`, `B064K`, or `B016M` types, respectively.
+/// - `InvalidSeq0255Size(usize)`: Raised when a sequence size exceeds `0255`.
+/// - `NonPrimitiveTypeCannotBeEncoded`: Error indicating an attempt to encode a complex type as a primitive.
+/// - `PrimitiveConversionError`: Generic conversion error related to primitive types.
+/// - `DecodableConversionError`: Error occurring during decoding due to conversion issues.
+/// - `UnInitializedDecoder`: Error triggered when a decoder is used without initialization.
+/// - `IoError`: Represents I/O-related errors, compatible with `no_std` mode where specific error types may vary.
+/// - `ReadError(usize, usize)`: Raised when an unexpected mismatch occurs during read operations, specifying expected and actual read sizes.
+/// - `VoidFieldMarker`: Used as a marker error for fields that should remain void or empty.
+/// - `ValueExceedsMaxSize(bool, usize, usize, usize, Vec<u8>, usize)`: Signifies a value overflow based on protocol restrictions, containing details about fixed/variable size, maximum size allowed, and the offending value details.
+/// - `SeqExceedsMaxSize`: Triggered when a sequence type (`Seq0255`, `Seq064K`) exceeds its maximum allowable size.
+/// - `NoDecodableFieldPassed`: Raised when no valid decodable field is provided during decoding.
+/// - `ValueIsNotAValidProtocol(u8)`: Error for protocol-specific invalid values.
+/// - `UnknownMessageType(u8)`: Raised when an unsupported or unknown message type is encountered.
+/// - `Sv2OptionHaveMoreThenOneElement(u8)`: Indicates a protocol constraint violation where `Sv2Option` unexpectedly contains multiple elements.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Error {
     OutOfBound,
@@ -115,7 +195,7 @@ impl From<E> for Error {
     }
 }
 
-/// FFI-safe Error
+/// `CError` is a foreign function interface (FFI)-compatible version of the `Error` enum to facilitate cross-language compatibility.
 #[repr(C)]
 #[derive(Debug)]
 pub enum CError {
@@ -246,6 +326,7 @@ impl<'a> From<buffer_sv2::Slice> for EncodableField<'a> {
     }
 }
 
+/// A struct to facilitate transferring a `Vec<u8>` across FFI boundaries.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct CVec {
@@ -255,6 +336,12 @@ pub struct CVec {
 }
 
 impl CVec {
+    /// Returns a mutable slice of the contained data.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure that the data pointed to by `self.data`
+    /// remains valid for the duration of the returned slice.
     pub fn as_mut_slice(&mut self) -> &mut [u8] {
         unsafe { core::slice::from_raw_parts_mut(self.data, self.len) }
     }
@@ -296,9 +383,11 @@ impl From<&[u8]> for CVec {
     }
 }
 
-/// Given a C allocated buffer return a rust allocated CVec
+/// Creates a `CVec` from a buffer that was allocated in C.
 ///
 /// # Safety
+/// The caller must ensure that the buffer is valid and that
+/// the data length does not exceed the allocated size.
 #[no_mangle]
 pub unsafe extern "C" fn cvec_from_buffer(data: *const u8, len: usize) -> CVec {
     let input = core::slice::from_raw_parts(data, len);
@@ -319,6 +408,7 @@ pub unsafe extern "C" fn cvec_from_buffer(data: *const u8, len: usize) -> CVec {
     }
 }
 
+/// A struct to manage a collection of `CVec` objects across FFI boundaries.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct CVec2 {
@@ -338,10 +428,12 @@ impl From<CVec2> for Vec<CVec> {
     }
 }
 
+/// Frees the underlying memory of a `CVec`.
 pub fn free_vec(buf: &mut CVec) {
     let _: Vec<u8> = unsafe { Vec::from_raw_parts(buf.data, buf.len, buf.capacity) };
 }
 
+/// Frees the underlying memory of a `CVec2` and all its elements.
 pub fn free_vec_2(buf: &mut CVec2) {
     let vs: Vec<CVec> = unsafe { Vec::from_raw_parts(buf.data, buf.len, buf.capacity) };
     for mut s in vs {
@@ -389,7 +481,10 @@ impl<'a, const A: bool, const B: usize, const C: usize, const D: usize>
     }
 }
 
+/// Initializes an empty `CVec2`.
+///
 /// # Safety
+/// The caller is responsible for freeing the `CVec2` when it is no longer needed.
 #[no_mangle]
 pub unsafe extern "C" fn init_cvec2() -> CVec2 {
     let mut buffer = Vec::<CVec>::new();
@@ -407,9 +502,11 @@ pub unsafe extern "C" fn init_cvec2() -> CVec2 {
     }
 }
 
-/// The caller is reponsible for NOT adding duplicate cvecs to the cvec2 structure,
-/// as this can lead to double free errors when the message is dropped.
+/// Adds a `CVec` to a `CVec2`.
+///
 /// # Safety
+/// The caller must ensure no duplicate `CVec`s are added, as duplicates may
+/// lead to double-free errors when the message is dropped.
 #[no_mangle]
 pub unsafe extern "C" fn cvec2_push(cvec2: &mut CVec2, cvec: CVec) {
     let mut buffer: Vec<CVec> = Vec::from_raw_parts(cvec2.data, cvec2.len, cvec2.capacity);
@@ -459,6 +556,7 @@ impl<'a, T: Into<CVec>> From<Seq064K<'a, T>> for CVec2 {
     }
 }
 
+/// Exported FFI functions for interoperability with C code.
 #[no_mangle]
 pub extern "C" fn _c_export_u24(_a: U24) {}
 #[no_mangle]
