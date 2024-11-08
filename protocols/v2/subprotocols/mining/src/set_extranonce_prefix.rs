@@ -6,12 +6,15 @@ use binary_sv2::{Deserialize, Serialize, B032};
 #[cfg(not(feature = "with_serde"))]
 use core::convert::TryInto;
 
-/// # SetExtranoncePrefix (Server -> Client)
+/// Used by upstream to changes downstream node’s extranonce prefix.
 ///
-/// Changes downstream node’s extranonce prefix. It is applicable for all jobs sent after this
-/// message on a given channel (both jobs provided by the upstream or jobs introduced by
-/// SetCustomMiningJob message). This message is applicable only for explicitly opened
-/// extended channels or standard channels (not group channels).
+/// This message will affect all jobs sent after this message on a given channel, provided by
+/// upstream or introduced by [`SetCustomMiningJob`] message.
+///
+/// Note that this message is applicable only for opened standard or extended channels, not group
+/// channels.
+///
+/// [`SetCustomMiningJob`]: crate::SetCustomMiningJob
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SetExtranoncePrefix<'decoder> {
     /// Extended or standard channel identifier.

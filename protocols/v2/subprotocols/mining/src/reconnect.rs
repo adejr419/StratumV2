@@ -6,27 +6,24 @@ use binary_sv2::{Deserialize, Serialize, Str0255};
 #[cfg(not(feature = "with_serde"))]
 use core::convert::TryInto;
 
-/// # Reconnect (Server -> Client)
-///
-/// This message allows clients to be redirected to a new upstream node.
+/// Used by upstream to redirect downstream connections to a new host.
 ///
 /// This message is connection-related so that it should not be propagated downstream by
-/// intermediate proxies. Upon receiving the message, the client re-initiates the Noise handshake
-/// and uses the pool’s authority public key to verify that the certificate presented by the new
-/// server has a valid signature.
+/// intermediate proxies. Upon receiving the message, the downstream re-initiates the Noise
+/// handshake and uses the pool’s authority public key to verify that the certificate presented by
+/// the new server has a valid signature.
 ///
-/// For security reasons, it is not possible to reconnect to a server with a certificate signed by a
-/// different pool authority key. The message intentionally does *not* contain a **pool public key** and
-/// thus cannot be used to reconnect to a different pool. This ensures that an attacker will not be
-/// able to redirect hashrate to an arbitrary server should the pool server get compromised and
-/// instructed to send reconnects to a new location.
+/// For security reasons, it is not possible to reconnect to an upstream with a certificate signed by
+/// a different pool authority key. The message intentionally does not contain a pool public key
+/// and thus cannot be used to reconnect to a different pool. This ensures that an attacker will
+/// not be able to redirect hashrate to an arbitrary server should the pool server get compromised
+/// and instructed to send reconnects to a new location.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Reconnect<'decoder> {
-    /// When empty, downstream node attempts to reconnect to its present
-    /// host.
+    /// When empty, downstream node should attempt to reconnect to its present host.
     #[cfg_attr(feature = "with_serde", serde(borrow))]
     pub new_host: Str0255<'decoder>,
-    /// When 0, downstream node attempts to reconnect to its present port.
+    /// When 0, downstream node should attempt to reconnect to its present host.
     pub new_port: u16,
 }
 #[cfg(feature = "with_serde")]
