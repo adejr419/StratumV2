@@ -1,38 +1,38 @@
-//! Module providing a flexible container for managing either owned or mutable references to byte arrays.
-//!
-//! # Overview
-//! This module defines the `Inner` enum, which serves as a container for managing both mutable references
-//! to byte slices and owning vectors (`Vec<u8>`). Designed to accommodate both fixed-size and variable-size data,
-//! `Inner` uses const generics to allow fine-grained control over its behavior, supporting scenarios where data
-//! constraints such as size and header length are critical.
-//!
-//! # `Inner` Enum
-//! The `Inner` enum has two variants to manage data:
-//! - `Ref(&'a mut [u8])`: A mutable reference to a byte slice, useful for cases where data needs to be modified in-place.
-//! - `Owned(Vec<u8>)`: An owned byte vector, offering full control over the data and supporting move semantics.
-//!
-//! ## Const Parameters
-//! Const generics provide configuration for the following constraints:
-//! - `ISFIXED`: Specifies whether the data has a fixed size.
-//! - `SIZE`: Specifies the size if `ISFIXED` is set to true.
-//! - `HEADERSIZE`: Defines the size of the header, useful for variable-size data needing a prefix to indicate its length.
-//! - `MAXSIZE`: Sets a limit on the maximum allowable size of the data.
-//!
-//! # Usage
-//! `Inner` provides various methods to work with the data, including:
-//! - `to_vec()`: Returns a `Vec<u8>`, either by cloning the slice or owned data.
-//! - `inner_as_ref()` and `inner_as_mut()`: Provides immutable or mutable access to the underlying data.
-//! - `expected_length(data: &[u8])`: Computes the expected data length based on the enum's configuration, validating it against constraints.
-//! - `get_header()`: Returns the data's header based on the specified `HEADERSIZE`.
-//!
-//! # Implementations
-//! The `Inner` enum implements `PartialEq`, `Eq`, `GetSize`, `SizeHint`, and `Sv2DataType` traits for its functionality.
-//! These traits support features like calculating the required buffer size, reading from byte slices, and writing data to byte slices.
-//!
-//! # Error Handling
-//! When data size exceeds specified limits or is inconsistent with the configuration, the methods return `Error` types.
-//! This helps ensure that operations on `Inner` adhere to defined constraints.
-//!
+// Module providing a flexible container for managing either owned or mutable references to byte arrays.
+//
+// # Overview
+// This module defines the `Inner` enum, which serves as a container for managing both mutable references
+// to byte slices and owning vectors (`Vec<u8>`). Designed to accommodate both fixed-size and variable-size data,
+// `Inner` uses const generics to allow fine-grained control over its behavior, supporting scenarios where data
+// constraints such as size and header length are critical.
+//
+// # `Inner` Enum
+// The `Inner` enum has two variants to manage data:
+// - `Ref(&'a mut [u8])`: A mutable reference to a byte slice, useful for cases where data needs to be modified in-place.
+// - `Owned(Vec<u8>)`: An owned byte vector, offering full control over the data and supporting move semantics.
+//
+// ## Const Parameters
+// Const generics provide configuration for the following constraints:
+// - `ISFIXED`: Specifies whether the data has a fixed size.
+// - `SIZE`: Specifies the size if `ISFIXED` is set to true.
+// - `HEADERSIZE`: Defines the size of the header, useful for variable-size data needing a prefix to indicate its length.
+// - `MAXSIZE`: Sets a limit on the maximum allowable size of the data.
+//
+// # Usage
+// `Inner` provides various methods to work with the data, including:
+// - `to_vec()`: Returns a `Vec<u8>`, either by cloning the slice or owned data.
+// - `inner_as_ref()` and `inner_as_mut()`: Provides immutable or mutable access to the underlying data.
+// - `expected_length(data: &[u8])`: Computes the expected data length based on the enum's configuration, validating it against constraints.
+// - `get_header()`: Returns the data's header based on the specified `HEADERSIZE`.
+//
+// # Implementations
+// The `Inner` enum implements `PartialEq`, `Eq`, `GetSize`, `SizeHint`, and `Sv2DataType` traits for its functionality.
+// These traits support features like calculating the required buffer size, reading from byte slices, and writing data to byte slices.
+//
+// # Error Handling
+// When data size exceeds specified limits or is inconsistent with the configuration, the methods return `Error` types.
+// This helps ensure that operations on `Inner` adhere to defined constraints.
+//
 use super::IntoOwned;
 use crate::{
     codec::{GetSize, SizeHint},
@@ -45,21 +45,21 @@ use core::convert::{TryFrom, TryInto};
 #[cfg(not(feature = "no_std"))]
 use std::io::{Error as E, Read, Write};
 
-/// The `Inner` enum represents a flexible container for managing both reference to mutable
-/// slices and owned bytes arrays (`Vec<u8>`). This design allows the container to either own
-/// its data or simply reference existing mutable data. It uses const generics to differentiate
-/// between fixed-size and variable-size data, as well as to specify key size-related parameters.
-///
-/// It has two variants:
-/// - `Ref(&'a mut [u8])`: A mutable reference to an external byte slice.
-/// - `Owned (Vec<u8>)`: A vector that owns its data, enabling dynamic ownership.
-///
-/// The const parameters that govern the behavior of this enum are:
-///  - `ISFIXED`: A boolean indicating whether the data has a fixed size.
-///  - `SIZE`: The size of the data if `ISFIXED` is true.
-///  - `HEADERSIZE`: The size of the header, which is used for types that require a
-///     prefix to describe the content's length.
-///  - `MAXSIZE`: The maximum allowable size for the data.
+// The `Inner` enum represents a flexible container for managing both reference to mutable
+// slices and owned bytes arrays (`Vec<u8>`). This design allows the container to either own
+// its data or simply reference existing mutable data. It uses const generics to differentiate
+// between fixed-size and variable-size data, as well as to specify key size-related parameters.
+//
+// It has two variants:
+// - `Ref(&'a mut [u8])`: A mutable reference to an external byte slice.
+// - `Owned (Vec<u8>)`: A vector that owns its data, enabling dynamic ownership.
+//
+// The const parameters that govern the behavior of this enum are:
+//  - `ISFIXED`: A boolean indicating whether the data has a fixed size.
+//  - `SIZE`: The size of the data if `ISFIXED` is true.
+//  - `HEADERSIZE`: The size of the header, which is used for types that require a
+//     prefix to describe the content's length.
+//  - `MAXSIZE`: The maximum allowable size for the data.
 #[repr(C)]
 #[derive(Debug)]
 pub enum Inner<
@@ -75,24 +75,24 @@ pub enum Inner<
 
 // TODO add test for that and implement it also with serde!!!!
 impl<'a, const SIZE: usize> Inner<'a, true, SIZE, 0, 0> {
-    /// Converts the inner data to a vector, either by cloning the referenced slice or
-    /// returning a clone of the owned vector.
+    // Converts the inner data to a vector, either by cloning the referenced slice or
+    // returning a clone of the owned vector.
     pub fn to_vec(&self) -> Vec<u8> {
         match self {
             Inner::Ref(ref_) => ref_.to_vec(),
             Inner::Owned(v) => v.clone(),
         }
     }
-    /// Returns an immutable reference to the inner data, whether it's a reference or
-    /// an owned vector.
+    // Returns an immutable reference to the inner data, whether it's a reference or
+    // an owned vector.
     pub fn inner_as_ref(&self) -> &[u8] {
         match self {
             Inner::Ref(ref_) => ref_,
             Inner::Owned(v) => v,
         }
     }
-    /// Provides a mutable reference to the inner data, allowing modification if the
-    /// data is being referenced.
+    // Provides a mutable reference to the inner data, allowing modification if the
+    // data is being referenced.
     pub fn inner_as_mut(&mut self) -> &mut [u8] {
         match self {
             Inner::Ref(ref_) => ref_,
@@ -104,17 +104,17 @@ impl<'a, const SIZE: usize> Inner<'a, true, SIZE, 0, 0> {
 impl<'a, const SIZE: usize, const HEADERSIZE: usize, const MAXSIZE: usize>
     Inner<'a, false, SIZE, HEADERSIZE, MAXSIZE>
 {
-    /// Similar to the fixed-size variant, this method converts the inner data into a vector.
-    /// The data is either cloned from the referenced slice or returned as a clone of the
-    /// owned vector.
+    // Similar to the fixed-size variant, this method converts the inner data into a vector.
+    // The data is either cloned from the referenced slice or returned as a clone of the
+    // owned vector.
     pub fn to_vec(&self) -> Vec<u8> {
         match self {
             Inner::Ref(ref_) => ref_[..].to_vec(),
             Inner::Owned(v) => v[..].to_vec(),
         }
     }
-    /// Returns an immutable reference to the inner data for variable-size types, either
-    /// referencing a slice or an owned vector.
+    // Returns an immutable reference to the inner data for variable-size types, either
+    // referencing a slice or an owned vector.
     pub fn inner_as_ref(&self) -> &[u8] {
         match self {
             Inner::Ref(ref_) => &ref_[..],
@@ -235,6 +235,7 @@ impl<'a, const ISFIXED: bool, const SIZE: usize, const HEADERSIZE: usize, const 
     }
 }
 
+// Implementation of tryfrom trait for mutable shared buffer, to convert to Inner<'a, ISFIXED, SIZE, HEADERSIZE, MAXSIZE>
 impl<'a, const ISFIXED: bool, const SIZE: usize, const HEADERSIZE: usize, const MAXSIZE: usize>
     TryFrom<&'a mut [u8]> for Inner<'a, ISFIXED, SIZE, HEADERSIZE, MAXSIZE>
 {
@@ -267,6 +268,7 @@ impl<'a, const ISFIXED: bool, const SIZE: usize, const HEADERSIZE: usize, const 
     }
 }
 
+// Implementation of tryfrom trait for Vec<u8>, to convert to Inner<'a, ISFIXED, SIZE, HEADERSIZE, MAXSIZE>
 impl<'a, const ISFIXED: bool, const SIZE: usize, const HEADERSIZE: usize, const MAXSIZE: usize>
     TryFrom<Vec<u8>> for Inner<'a, ISFIXED, SIZE, HEADERSIZE, MAXSIZE>
 {
@@ -299,6 +301,7 @@ impl<'a, const ISFIXED: bool, const SIZE: usize, const HEADERSIZE: usize, const 
     }
 }
 
+// Implementation of GetSize trait, to get size of type Inner<'a, ISFIXED, SIZE, HEADERSIZE, MAXSIZE>
 impl<'a, const ISFIXED: bool, const SIZE: usize, const HEADERSIZE: usize, const MAXSIZE: usize>
     GetSize for Inner<'a, ISFIXED, SIZE, HEADERSIZE, MAXSIZE>
 {
@@ -310,6 +313,7 @@ impl<'a, const ISFIXED: bool, const SIZE: usize, const HEADERSIZE: usize, const 
     }
 }
 
+// Implementation of GetSize trait, to get expected size of type Inner<'a, ISFIXED, SIZE, HEADERSIZE, MAXSIZE>
 impl<'a, const ISFIXED: bool, const HEADERSIZE: usize, const SIZE: usize, const MAXSIZE: usize>
     SizeHint for Inner<'a, ISFIXED, HEADERSIZE, SIZE, MAXSIZE>
 {

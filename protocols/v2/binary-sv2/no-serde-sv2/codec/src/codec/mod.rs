@@ -1,76 +1,76 @@
-//! This module provides traits and utilities for encoding and decoding data at a low level,
-//! prioritizing efficiency and memory safety by operating directly on slices rather than
-//! relying on `Read` or `Write` streams.
-//!
-//! ## Overview
-//!
-//! The module’s approach is optimized for performance by directly manipulating byte slices,
-//! avoiding the overhead of stream-based I/O. This method leverages memory-efficient techniques,
-//! such as obtaining pointers to original data rather than copying it. It also avoids enums
-//! for decoding since each message type can be deduced from its numeric identifier, streamlining
-//! the decoding process and further enhancing efficiency.
-//!
-//! ### Key Components
-//!
-//! - **Traits**: This module defines core traits (`SizeHint`, `GetSize`, `Fixed`, `Variable`)
-//!   that establish a consistent interface for handling data encoding and decoding operations.
-//! - **Buffer Management**: When the `with_buffer_pool` feature is enabled, the `Slice` type
-//!   from `buffer_sv2` is included, supporting memory pooling and efficient slice handling for
-//!   scenarios where high-performance buffer management is required.
-//!
-//! ### Traits Overview
-//!
-//! - **`SizeHint`**: Used to calculate the size of a decodable type, either as a static or
-//!   instance-based estimate. This trait is particularly useful for variable-length data
-//!   where the size must be determined dynamically.
-//! - **`GetSize`**: Provides the exact size of an encodable type in bytes, which is crucial
-//!   for buffer allocation and encoding operations.
-//! - **`Fixed`**: Marks types with a compile-time constant size, simplifying encoding and
-//!   decoding for types where the size is known and unchanging.
-//! - **`Variable`**: For types with dynamic sizes, this trait provides methods and constants
-//!   (e.g., `HEADER_SIZE` and `MAX_SIZE`) to manage size variability, along with methods for
-//!   calculating the data's inner size and retrieving its header.
-//!
-//! ## Features
-//!
-//! - **`no_std` Compatibility**: For constrained environments, this module can be compiled
-//!   without the standard library. Some methods and traits (e.g., stream-based encoding)
-//!   are conditionally available only when `std` is included.
-//! - **`with_buffer_pool`**: When enabled, includes the `Slice` type for managing pooled
-//!   memory slices, which enhances memory handling and efficiency in high-performance
-//!   scenarios.
-//!
-//! ## Detailed Trait Descriptions
-//!
-//! ### `SizeHint`
-//! Defines methods to calculate the size of encoded data for types where the size may vary.
-//!
-//! - **`size_hint`**: A static method that takes raw data and an offset to return the total
-//!   size of the encoded data. Useful for variable-sized messages where size determination
-//!   is crucial for decoding operations.
-//! - **`size_hint_`**: An instance-based method that calculates the size for a specific
-//!   instance, offering flexibility in scenarios where instances differ in size.
-//!
-//! ### `GetSize`
-//! Provides a `get_size` method, returning the exact size in bytes of an encodable type.
-//!
-//! ### `Fixed`
-//! For types with a fixed size, this trait defines a constant `SIZE`, representing the
-//! number of bytes needed to encode or decode the type. This simplifies working with
-//! fixed-size types like integers or arrays.
-//!
-//! ### `Variable`
-//! Types that vary in size implement this trait, which provides constants (`HEADER_SIZE` and
-//! `MAX_SIZE`) and methods for size management. This trait also includes methods to retrieve
-//! header information and calculate the data’s inner size, supporting flexible, dynamically
-//! sized encoding and decoding scenarios.
-//!
-//! ## Summary
-//!
-//! This module’s traits and utilities support efficient, low-level encoding and decoding
-//! operations by operating directly on slices and avoiding excess data copying. It offers a
-//! balance of fixed and variable-size management capabilities, making it suitable for a variety
-//! of encoding tasks.
+// This module provides traits and utilities for encoding and decoding data at a low level,
+// prioritizing efficiency and memory safety by operating directly on slices rather than
+// relying on `Read` or `Write` streams.
+//
+// ## Overview
+//
+// The module’s approach is optimized for performance by directly manipulating byte slices,
+// avoiding the overhead of stream-based I/O. This method leverages memory-efficient techniques,
+// such as obtaining pointers to original data rather than copying it. It also avoids enums
+// for decoding since each message type can be deduced from its numeric identifier, streamlining
+// the decoding process and further enhancing efficiency.
+//
+// ### Key Components
+//
+// - **Traits**: This module defines core traits (`SizeHint`, `GetSize`, `Fixed`, `Variable`)
+//   that establish a consistent interface for handling data encoding and decoding operations.
+// - **Buffer Management**: When the `with_buffer_pool` feature is enabled, the `Slice` type
+//   from `buffer_sv2` is included, supporting memory pooling and efficient slice handling for
+//   scenarios where high-performance buffer management is required.
+//
+// ### Traits Overview
+//
+// - **`SizeHint`**: Used to calculate the size of a decodable type, either as a static or
+//   instance-based estimate. This trait is particularly useful for variable-length data
+//   where the size must be determined dynamically.
+// - **`GetSize`**: Provides the exact size of an encodable type in bytes, which is crucial
+//   for buffer allocation and encoding operations.
+// - **`Fixed`**: Marks types with a compile-time constant size, simplifying encoding and
+//   decoding for types where the size is known and unchanging.
+// - **`Variable`**: For types with dynamic sizes, this trait provides methods and constants
+//   (e.g., `HEADER_SIZE` and `MAX_SIZE`) to manage size variability, along with methods for
+//   calculating the data's inner size and retrieving its header.
+//
+// ## Features
+//
+// - **`no_std` Compatibility**: For constrained environments, this module can be compiled
+//   without the standard library. Some methods and traits (e.g., stream-based encoding)
+//   are conditionally available only when `std` is included.
+// - **`with_buffer_pool`**: When enabled, includes the `Slice` type for managing pooled
+//   memory slices, which enhances memory handling and efficiency in high-performance
+//   scenarios.
+//
+// ## Detailed Trait Descriptions
+//
+// ### `SizeHint`
+// Defines methods to calculate the size of encoded data for types where the size may vary.
+//
+// - **`size_hint`**: A static method that takes raw data and an offset to return the total
+//   size of the encoded data. Useful for variable-sized messages where size determination
+//   is crucial for decoding operations.
+// - **`size_hint_`**: An instance-based method that calculates the size for a specific
+//   instance, offering flexibility in scenarios where instances differ in size.
+//
+// ### `GetSize`
+// Provides a `get_size` method, returning the exact size in bytes of an encodable type.
+//
+// ### `Fixed`
+// For types with a fixed size, this trait defines a constant `SIZE`, representing the
+// number of bytes needed to encode or decode the type. This simplifies working with
+// fixed-size types like integers or arrays.
+//
+// ### `Variable`
+// Types that vary in size implement this trait, which provides constants (`HEADER_SIZE` and
+// `MAX_SIZE`) and methods for size management. This trait also includes methods to retrieve
+// header information and calculate the data’s inner size, supporting flexible, dynamically
+// sized encoding and decoding scenarios.
+//
+// ## Summary
+//
+// This module’s traits and utilities support efficient, low-level encoding and decoding
+// operations by operating directly on slices and avoiding excess data copying. It offers a
+// balance of fixed and variable-size management capabilities, making it suitable for a variety
+// of encoding tasks.
 
 // At lower level I generally prefer to work with slices as more efficient than Read/Write streams
 // eg: Read for & [u8] is implemented with memcpy but here is more than enough to just get a
@@ -101,7 +101,13 @@ use alloc::vec::Vec;
 /// These methods are crucial in decoding scenarios where the full size of the message
 /// is not immediately known, helping to determine how many bytes need to be read.
 pub trait SizeHint {
+    /// `size_hint` is a static method that takes the raw data and an offset and returns the total
+    /// size of the encoded message. This is particularly useful for types where the encoded size
+    /// may vary based on the contents of the data, and we need to calculate how much space is
+    /// required for decoding.
     fn size_hint(data: &[u8], offset: usize) -> Result<usize, Error>;
+    /// `size_hint_` is an instance method that performs the same function but allows the size to be
+    /// be determined with respect to the current instance of the type. 
     fn size_hint_(&self, data: &[u8], offset: usize) -> Result<usize, Error>;
 }
 
@@ -110,6 +116,7 @@ pub trait SizeHint {
 /// It provides a single method, `get_size`, which returns the total size of the type
 /// in bytes.
 pub trait GetSize {
+    /// `get_size` returns total size of the type in bytes.
     fn get_size(&self) -> usize;
 }
 
@@ -129,6 +136,7 @@ impl GetSize for Slice {
 /// fixed number of bytes needed to encode or decode the type. This trait is used for
 /// types that have a know size at compile time , such as integers, fixed-size arrays, etc.
 pub trait Fixed {
+    ///the constant `SIZE`, represents the fixed number of bytes needed to encode or decode the type.
     const SIZE: usize;
 }
 

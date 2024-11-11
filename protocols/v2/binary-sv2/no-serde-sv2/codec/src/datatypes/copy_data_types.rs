@@ -1,36 +1,36 @@
-//! This module provides implementations for encoding and decoding of copy data types
-//! as required by the SV2 protocol. It includes traits and structures to facilitate
-//! byte-level serialization and deserialization, particularly for types that do not
-//! contain dynamically-sized data.
-//!
-//! ## Traits and Implementations
-//!
-//! ### `Fixed`
-//! The `Fixed` trait is implemented for various data types to specify a fixed size for each,
-//! enabling consistent memory allocation during serialization. The `SIZE` constant for each type
-//! defines its byte size, with implementations provided for `bool`, unsigned integers (e.g., `u8`,
-//! `u16`, `u32`, `u64`), and custom types like `U24`.
-//!
-//! ### `Sv2DataType`
-//! The `Sv2DataType` trait is implemented for these data types, providing methods for encoding
-//! and decoding operations such as `from_bytes_unchecked`, `from_vec_`, `from_reader_` (if `std` is available),
-//! and `to_slice_unchecked`. The methods use little-endian byte order to maintain consistency
-//! across platforms.
-//!
-//! ## Special Types
-//!
-//! ### `U24`
-//! A custom 24-bit unsigned integer represented as a `U24` struct is included to handle
-//! 3-byte data, which is often used in SV2 protocols for memory-efficient encoding.
-//! The struct provides conversion methods to and from `u32`, with `TryFrom<u32>` ensuring
-//! values remain within the 24-bit range (0 to 16,777,215).
-//!
-//! ## Macros
-//!
-//! A macro, `impl_sv2_for_unsigned`, is defined to streamline the implementation of the
-//! `Sv2DataType` trait for unsigned integer types. The macro ensures that each type uses
-//! little-endian byte ordering for serialization, handling both in-memory buffers and
-//! `std::io::Read`/`Write` interfaces when `std` is available.
+// This module provides implementations for encoding and decoding of copy data types
+// as required by the SV2 protocol. It includes traits and structures to facilitate
+// byte-level serialization and deserialization, particularly for types that do not
+// contain dynamically-sized data.
+//
+// ## Traits and Implementations
+//
+// ### `Fixed`
+// The `Fixed` trait is implemented for various data types to specify a fixed size for each,
+// enabling consistent memory allocation during serialization. The `SIZE` constant for each type
+// defines its byte size, with implementations provided for `bool`, unsigned integers (e.g., `u8`,
+// `u16`, `u32`, `u64`), and custom types like `U24`.
+//
+// ### `Sv2DataType`
+// The `Sv2DataType` trait is implemented for these data types, providing methods for encoding
+// and decoding operations such as `from_bytes_unchecked`, `from_vec_`, `from_reader_` (if `std` is available),
+// and `to_slice_unchecked`. The methods use little-endian byte order to maintain consistency
+// across platforms.
+//
+// ## Special Types
+//
+// ### `U24`
+// A custom 24-bit unsigned integer represented as a `U24` struct is included to handle
+// 3-byte data, which is often used in SV2 protocols for memory-efficient encoding.
+// The struct provides conversion methods to and from `u32`, with `TryFrom<u32>` ensuring
+// values remain within the 24-bit range (0 to 16,777,215).
+//
+// ## Macros
+//
+// A macro, `impl_sv2_for_unsigned`, is defined to streamline the implementation of the
+// `Sv2DataType` trait for unsigned integer types. The macro ensures that each type uses
+// little-endian byte ordering for serialization, handling both in-memory buffers and
+// `std::io::Read`/`Write` interfaces when `std` is available.
 use crate::{codec::Fixed, datatypes::Sv2DataType, Error};
 
 use alloc::vec::Vec;

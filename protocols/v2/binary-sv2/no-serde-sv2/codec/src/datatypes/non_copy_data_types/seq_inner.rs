@@ -1,53 +1,53 @@
-//! # Sequence and Optional Data Structures
-//!
-//! This module provides specialized implementations of sequences and optional data types, primarily
-//! designed to handle serialized data with fixed size constraints. These structures are particularly
-//! suited for encoding and decoding variable-length and optional data fields within serialized
-//! formats.
-//!
-//! ## Provided Types
-//!
-//! ### `Seq0255`
-//! - Represents a sequence of up to 255 elements.
-//! - Includes utility methods such as:
-//!   - `to_vec()`: Converts each element into its byte vector representation.
-//!   - `inner_as_ref()`: Provides references to the inner data for each element.
-//!   - `new()`: Creates a `Seq0255` instance, enforcing the maximum length constraint.
-//! - Implements the `Decodable` trait for seamless deserialization, and `GetSize` to calculate the
-//!   encoded size, ensuring compatibility with various serialization formats.
-//!
-//! ### `Seq064K`
-//! - Represents a sequence of up to 65535 elements.
-//! - Similar to `Seq0255`, it provides:
-//!   - `to_vec()` and `inner_as_ref()` methods to convert or reference each element.
-//!   - `new()` enforces the maximum size limit, preventing excess memory usage.
-//! - Like `Seq0255`, `Seq064K` is `Decodable` and implements `GetSize`, making it versatile for
-//!   serialization scenarios.
-//!
-//! ### `Sv2Option`
-//! - Represents an optional data type, encoding a single or absent element.
-//! - Provides `to_option()` to convert to a standard `Option<Vec<u8>>`.
-//! - `new()` and `into_inner()` enable flexible conversions between `Option` and `Sv2Option`.
-//!
-//! ## Utility Macros
-//!
-//! - `impl_codec_for_sequence!`: Implements the `Decodable` trait for a sequence type, allowing
-//!   for a custom deserialization process that interprets field markers.
-//! - `impl_into_encodable_field_for_seq!`: Implements conversions to `EncodableField` for a
-//!   sequence, adapting the sequence for inclusion in serialized structures.
-//!
-//! ## Notes on Serialization
-//!
-//! This module's types are designed to interoperate with the `serde-sv2` framework, using lifetimes
-//! (`'a`) for compatibility with external lifetimes and ensuring the types can be converted into
-//! various serialized forms with or without `serde` support.
-//!
-//! ## Feature Flags
-//!
-//! - `prop_test`: Enables property-based testing compatibility by implementing `TryFrom` for `Vec`
-//!   conversions.
-//! - `no_std`: Allows the module to be used in `no_std` environments by disabling `std::io::Read`
-//!   dependencies.
+// # Sequence and Optional Data Structures
+//
+// This module provides specialized implementations of sequences and optional data types, primarily
+// designed to handle serialized data with fixed size constraints. These structures are particularly
+// suited for encoding and decoding variable-length and optional data fields within serialized
+// formats.
+//
+// ## Provided Types
+//
+// ### `Seq0255`
+// - Represents a sequence of up to 255 elements.
+// - Includes utility methods such as:
+//   - `to_vec()`: Converts each element into its byte vector representation.
+//   - `inner_as_ref()`: Provides references to the inner data for each element.
+//   - `new()`: Creates a `Seq0255` instance, enforcing the maximum length constraint.
+// - Implements the `Decodable` trait for seamless deserialization, and `GetSize` to calculate the
+//   encoded size, ensuring compatibility with various serialization formats.
+//
+// ### `Seq064K`
+// - Represents a sequence of up to 65535 elements.
+// - Similar to `Seq0255`, it provides:
+//   - `to_vec()` and `inner_as_ref()` methods to convert or reference each element.
+//   - `new()` enforces the maximum size limit, preventing excess memory usage.
+// - Like `Seq0255`, `Seq064K` is `Decodable` and implements `GetSize`, making it versatile for
+//   serialization scenarios.
+//
+// ### `Sv2Option`
+// - Represents an optional data type, encoding a single or absent element.
+// - Provides `to_option()` to convert to a standard `Option<Vec<u8>>`.
+// - `new()` and `into_inner()` enable flexible conversions between `Option` and `Sv2Option`.
+//
+// ## Utility Macros
+//
+// - `impl_codec_for_sequence!`: Implements the `Decodable` trait for a sequence type, allowing
+//   for a custom deserialization process that interprets field markers.
+// - `impl_into_encodable_field_for_seq!`: Implements conversions to `EncodableField` for a
+//   sequence, adapting the sequence for inclusion in serialized structures.
+//
+// ## Notes on Serialization
+//
+// This module's types are designed to interoperate with the `serde-sv2` framework, using lifetimes
+// (`'a`) for compatibility with external lifetimes and ensuring the types can be converted into
+// various serialized forms with or without `serde` support.
+//
+// ## Feature Flags
+//
+// - `prop_test`: Enables property-based testing compatibility by implementing `TryFrom` for `Vec`
+//   conversions.
+// - `no_std`: Allows the module to be used in `no_std` environments by disabling `std::io::Read`
+//   dependencies.
 
 use crate::{
     codec::{
@@ -64,9 +64,11 @@ use core::marker::PhantomData;
 impl<'a, const SIZE: usize, const HEADERSIZE: usize, const MAXSIZE: usize>
     Seq0255<'a, super::inner::Inner<'a, false, SIZE, HEADERSIZE, MAXSIZE>>
 {
+    /// Converts the inner types to owned vector, and collects.
     pub fn to_vec(&self) -> Vec<Vec<u8>> {
         self.0.iter().map(|x| x.to_vec()).collect()
     }
+    /// Converts the inner types to shared reference, and collects.
     pub fn inner_as_ref(&self) -> Vec<&[u8]> {
         self.0.iter().map(|x| x.inner_as_ref()).collect()
     }
@@ -74,9 +76,13 @@ impl<'a, const SIZE: usize, const HEADERSIZE: usize, const MAXSIZE: usize>
 
 // TODO add test for that and implement it also with serde!!!!
 impl<'a, const SIZE: usize> Seq0255<'a, super::inner::Inner<'a, true, SIZE, 0, 0>> {
+
+    /// Converts the inner types to owned vector, and collects.
     pub fn to_vec(&self) -> Vec<Vec<u8>> {
         self.0.iter().map(|x| x.to_vec()).collect()
     }
+
+    /// Converts the inner types to shared reference, and collects.
     pub fn inner_as_ref(&self) -> Vec<&[u8]> {
         self.0.iter().map(|x| x.inner_as_ref()).collect()
     }
@@ -85,9 +91,12 @@ impl<'a, const SIZE: usize> Seq0255<'a, super::inner::Inner<'a, true, SIZE, 0, 0
 impl<'a, const SIZE: usize, const HEADERSIZE: usize, const MAXSIZE: usize>
     Seq064K<'a, super::inner::Inner<'a, false, SIZE, HEADERSIZE, MAXSIZE>>
 {
+    /// Converts the inner types to owned vector, and collects.
     pub fn to_vec(&self) -> Vec<Vec<u8>> {
         self.0.iter().map(|x| x.to_vec()).collect()
     }
+
+    /// Converts the inner types to shared reference, and collects.
     pub fn inner_as_ref(&self) -> Vec<&[u8]> {
         self.0.iter().map(|x| x.inner_as_ref()).collect()
     }
@@ -95,9 +104,13 @@ impl<'a, const SIZE: usize, const HEADERSIZE: usize, const MAXSIZE: usize>
 
 // TODO add test for that and implement it also with serde!!!!
 impl<'a, const SIZE: usize> Seq064K<'a, super::inner::Inner<'a, true, SIZE, 0, 0>> {
+
+    /// Converts the inner types to owned vector, and collects.
     pub fn to_vec(&self) -> Vec<Vec<u8>> {
         self.0.iter().map(|x| x.to_vec()).collect()
     }
+
+    /// Converts the inner types to shared reference, and collects.
     pub fn inner_as_ref(&self) -> Vec<&[u8]> {
         self.0.iter().map(|x| x.inner_as_ref()).collect()
     }
@@ -125,7 +138,7 @@ impl<'a, T: 'a> Seq0255<'a, T> {
         }
     }
 
-    // Creates a new `Seq0255` instance with the given inner vector.
+    /// Creates a new `Seq0255` instance with the given inner vector.
     pub fn new(inner: Vec<T>) -> Result<Self, Error> {
         if inner.len() <= 255 {
             Ok(Self(inner, PhantomData))
@@ -134,7 +147,7 @@ impl<'a, T: 'a> Seq0255<'a, T> {
         }
     }
 
-    // Consumes the `Seq0255` and returns the inner vector of elements.
+    /// Consumes the `Seq0255` and returns the inner vector of elements.
     pub fn into_inner(self) -> Vec<T> {
         self.0
     }
@@ -169,7 +182,7 @@ impl<'a, T: 'a> Seq064K<'a, T> {
         }
     }
 
-    // Creates a new `Seq064K` instance with the given inner vector.
+    /// Creates a new `Seq064K` instance with the given inner vector.
     pub fn new(inner: Vec<T>) -> Result<Self, Error> {
         if inner.len() <= 65535 {
             Ok(Self(inner, PhantomData))
@@ -178,7 +191,7 @@ impl<'a, T: 'a> Seq064K<'a, T> {
         }
     }
 
-    // Consumes the `Seq064K` and returns the inner vector of elements.
+    /// Consumes the `Seq064K` and returns the inner vector of elements.
     pub fn into_inner(self) -> Vec<T> {
         self.0
     }
@@ -382,12 +395,14 @@ impl<'a, T> From<Vec<T>> for Seq064K<'a, T> {
 }
 
 impl<'a, T: Fixed> Seq0255<'a, T> {
+    /// convecrts the lifetime to static
     pub fn into_static(self) -> Seq0255<'static, T> {
         // Safe unwrap cause the initial value is a valid Seq0255
         Seq0255::new(self.0).unwrap()
     }
 }
 impl<'a, T: Fixed> Sv2Option<'a, T> {
+    /// convecrts the lifetime to static
     pub fn into_static(self) -> Sv2Option<'static, T> {
         Sv2Option::new(self.into_inner())
     }
@@ -396,6 +411,7 @@ impl<'a, T: Fixed> Sv2Option<'a, T> {
 impl<'a, const ISFIXED: bool, const SIZE: usize, const HEADERSIZE: usize, const MAXSIZE: usize>
     Seq0255<'a, Inner<'a, ISFIXED, SIZE, HEADERSIZE, MAXSIZE>>
 {
+    /// convecrts the lifetime to static
     pub fn into_static(
         self,
     ) -> Seq0255<'static, Inner<'static, ISFIXED, SIZE, HEADERSIZE, MAXSIZE>> {
@@ -409,6 +425,7 @@ impl<'a, const ISFIXED: bool, const SIZE: usize, const HEADERSIZE: usize, const 
 impl<'a, const ISFIXED: bool, const SIZE: usize, const HEADERSIZE: usize, const MAXSIZE: usize>
     Sv2Option<'a, Inner<'a, ISFIXED, SIZE, HEADERSIZE, MAXSIZE>>
 {
+    /// convecrts the lifetime to static
     pub fn into_static(
         self,
     ) -> Sv2Option<'static, Inner<'static, ISFIXED, SIZE, HEADERSIZE, MAXSIZE>> {
@@ -419,6 +436,7 @@ impl<'a, const ISFIXED: bool, const SIZE: usize, const HEADERSIZE: usize, const 
 }
 
 impl<'a, T: Fixed> Seq064K<'a, T> {
+    /// convecrts the lifetime to static
     pub fn into_static(self) -> Seq064K<'static, T> {
         // Safe unwrap cause the initial value is a valid Seq064K
         Seq064K::new(self.0).unwrap()
@@ -428,6 +446,7 @@ impl<'a, T: Fixed> Seq064K<'a, T> {
 impl<'a, const ISFIXED: bool, const SIZE: usize, const HEADERSIZE: usize, const MAXSIZE: usize>
     Seq064K<'a, Inner<'a, ISFIXED, SIZE, HEADERSIZE, MAXSIZE>>
 {
+    /// convecrts the lifetime to static
     pub fn into_static(
         self,
     ) -> Seq064K<'static, Inner<'static, ISFIXED, SIZE, HEADERSIZE, MAXSIZE>> {
@@ -445,6 +464,7 @@ pub struct Sv2Option<'a, T>(pub Vec<T>, PhantomData<&'a T>);
 
 // TODO add test for that and implement it also with serde!!!!
 impl<'a, const SIZE: usize> Sv2Option<'a, super::inner::Inner<'a, true, SIZE, 0, 0>> {
+    /// Gets the owned first element of the sequence, if present
     pub fn to_option(&self) -> Option<Vec<u8>> {
         let v: Vec<Vec<u8>> = self.0.iter().map(|x| x.to_vec()).collect();
         match v.len() {
@@ -454,6 +474,7 @@ impl<'a, const SIZE: usize> Sv2Option<'a, super::inner::Inner<'a, true, SIZE, 0,
             _ => unreachable!(),
         }
     }
+    /// Gets the reference to first element of the sequence, if present
     pub fn inner_as_ref(&self) -> Option<&[u8]> {
         let v: Vec<&[u8]> = self.0.iter().map(|x| x.inner_as_ref()).collect();
         match v.len() {
@@ -481,6 +502,7 @@ impl<'a, T: 'a> Sv2Option<'a, T> {
         }
     }
 
+    /// Initializes a new option type
     pub fn new(inner: Option<T>) -> Self {
         match inner {
             Some(x) => Self(vec![x], PhantomData),
@@ -488,6 +510,7 @@ impl<'a, T: 'a> Sv2Option<'a, T> {
         }
     }
 
+    /// Gets the inner value of Sv2Option
     pub fn into_inner(mut self) -> Option<T> {
         let len = self.0.len();
         match len {

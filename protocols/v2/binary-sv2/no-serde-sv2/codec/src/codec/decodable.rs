@@ -1,31 +1,3 @@
-//! This module provides an interface and implementation details for decoding complex data structures
-//! from raw bytes or I/O streams. It is intended to handle deserialization of nested and primitive data
-//! structures by defining traits, enums, and helper functions for managing the decoding process.
-//!
-//! # Overview
-//! The core component of this module is the `Decodable` trait, which provides methods for defining the
-//! structure of a type, managing the decoding of raw byte data, and constructing instances of the type
-//! from decoded fields. This trait is designed to work with both in-memory byte slices and I/O streams,
-//! making it flexible for various deserialization use cases.
-//!
-//! # Key Concepts and Types
-//! - **`Decodable` Trait**: The primary trait for decoding types from byte data. It includes methods to
-//!   break down raw data, decode individual fields, and construct the final type.
-//! - **`FieldMarker` and `PrimitiveMarker`**: These enums represent different data types or structures.
-//!   They guide the decoding process by defining the structure of fields and their respective types.
-//! - **`DecodableField` and `DecodablePrimitive`**: Variants for decoded fields, representing either
-//!   primitive types or nested structures. They form the building blocks for assembling complex data types.
-//! - **`SizeHint`**: Provides size information for fields and structures to assist in efficient decoding.
-//!
-//! # Error Handling
-//! This module defines custom error types to handle issues that may arise during decoding,
-//! such as insufficient data or unsupported types. Errors are surfaced through `Result`
-//! types and managed gracefully to ensure reliability in data parsing tasks.
-//!
-//! # `no_std` Support
-//! The module is compatible with `no_std` environments by conditional compilation. When
-//! the `no_std` feature is enabled, I/O-dependent methods like `from_reader` are omitted,
-//! allowing for a lightweight build in constrained environments.
 use crate::{
     codec::{GetSize, SizeHint},
     datatypes::{
@@ -50,23 +22,23 @@ use std::io::{Cursor, Read};
 /// - `from_bytes`: High-level method that manages the decoding process from raw bytes.
 /// - `from_reader`: Reads and decodes data from a stream, useful when working with I/O sources like files or network sockets.
 pub trait Decodable<'a>: Sized {
-    // Returns the structure of the type.
-    //
-    // This method defines the layout of the data fields within the type. The structure
-    // returned is used to split raw data into individual fields that can be decoded.
+    /// Returns the structure of the type.
+    ///
+    /// This method defines the layout of the data fields within the type. The structure
+    /// returned is used to split raw data into individual fields that can be decoded.
     fn get_structure(data: &[u8]) -> Result<Vec<FieldMarker>, Error>;
 
-    // Constructs the type from decoded fields.
-    //
-    // After the data has been split into fields, this method combines those fields
-    // back into the original type, handling nested structures or composite fields.
+    /// Constructs the type from decoded fields.
+    ///
+    /// After the data has been split into fields, this method combines those fields
+    /// back into the original type, handling nested structures or composite fields.
     fn from_decoded_fields(data: Vec<DecodableField<'a>>) -> Result<Self, Error>;
 
-    // Decodes the type from raw bytes.
-    //
-    // This method orchestrates the decoding process, calling `get_structure` to break down
-    // the raw data, decoding each field, and then using `from_decoded_fields` to reassemble
-    // the fields into the original type.
+    /// Decodes the type from raw bytes.
+    ///
+    /// This method orchestrates the decoding process, calling `get_structure` to break down
+    /// the raw data, decoding each field, and then using `from_decoded_fields` to reassemble
+    /// the fields into the original type.
     fn from_bytes(data: &'a mut [u8]) -> Result<Self, Error> {
         let structure = Self::get_structure(data)?;
         let mut fields = Vec::new();
@@ -84,11 +56,11 @@ pub trait Decodable<'a>: Sized {
         Self::from_decoded_fields(fields)
     }
 
-    // Decodes the type from a reader stream.
-    //
-    // Instead of working directly with byte slices, this method reads from an I/O source
-    // like a file or a network stream. It processes all available data, decodes it, and
-    // reconstructs the type.
+    /// Decodes the type from a reader stream.
+    ///
+    /// Instead of working directly with byte slices, this method reads from an I/O source
+    /// like a file or a network stream. It processes all available data, decodes it, and
+    /// reconstructs the type.
     #[cfg(not(feature = "no_std"))]
     fn from_reader(reader: &mut impl Read) -> Result<Self, Error> {
         let mut data = Vec::new();
@@ -106,10 +78,10 @@ pub trait Decodable<'a>: Sized {
     }
 }
 
-/// Enum representing primitive data markers.
-///
-/// These markers are used to identify primitive types such as integers, booleans, and byte arrays.
-/// Each variant represents a specific type and is used during decoding to interpret raw data correctly.
+// Enum representing primitive data markers.
+//
+// These markers are used to identify primitive types such as integers, booleans, and byte arrays.
+// Each variant represents a specific type and is used during decoding to interpret raw data correctly.
 #[derive(Debug, Clone, Copy)]
 pub enum PrimitiveMarker {
     U8,
@@ -135,7 +107,9 @@ pub enum PrimitiveMarker {
 /// understand the layout and type of each field in the data, guiding the decoding process.
 #[derive(Debug, Clone)]
 pub enum FieldMarker {
+    /// Primitive Marker 
     Primitive(PrimitiveMarker),
+    /// Struct Marker
     Struct(Vec<FieldMarker>),
 }
 
@@ -145,14 +119,15 @@ pub enum FieldMarker {
 /// type of a given field. It is used to assist in decoding by indicating how to interpret
 /// the data.
 pub trait GetMarker {
+    /// This helps getting a marker for a type
     fn get_marker() -> FieldMarker;
 }
 
-/// Represents a decoded primitive data type.
-///
-/// After decoding, the raw data is transformed into one of these variants, which represent
-/// standard primitive types like integers or binary arrays. The decoder uses these values to
-/// build the final structure of the message.
+// Represents a decoded primitive data type.
+//
+// After decoding, the raw data is transformed into one of these variants, which represent
+// standard primitive types like integers or binary arrays. The decoder uses these values to
+// build the final structure of the message.
 #[derive(Debug)]
 pub enum DecodablePrimitive<'a> {
     U8(u8),
@@ -179,7 +154,9 @@ pub enum DecodablePrimitive<'a> {
 /// distinction.
 #[derive(Debug)]
 pub enum DecodableField<'a> {
+    /// Represents DecodeablePrimitive
     Primitive(DecodablePrimitive<'a>),
+    /// Represents vector of DecodableField
     Struct(Vec<DecodableField<'a>>),
 }
 

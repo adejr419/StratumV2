@@ -1,63 +1,63 @@
-//! This module provides an encoding framework for serializing various data types into bytes.
-//!
-//! The primary trait, [`Encodable`], is the core of this framework, enabling types to define
-//! how they serialize their data into bytes. This functionality is key for transmitting data
-//! between different components or systems in a consistent, byte-oriented format.
-//!
-//! ## Overview
-//!
-//! The module supports a wide variety of data types, including basic types (e.g., integers,
-//! booleans, and byte arrays) and more complex structures. Each type’s encoding logic is
-//! contained within enums like [`EncodablePrimitive`] and [`EncodableField`], allowing for
-//! structured and hierarchical data serialization.
-//!
-//! ### Key Types
-//!
-//! - **[`Encodable`]**: Defines methods for converting an object into a byte array or writing
-//!   it directly to an output stream. It supports both primitive data types and complex structures.
-//! - **[`EncodablePrimitive`]**: Represents basic types that can be serialized directly.
-//!   Variants include common data types like integers, booleans, and byte arrays.
-//! - **[`EncodableField`]**: Extends the [`EncodablePrimitive`] concept to support structured
-//!   and nested data, allowing complex structures to be encoded recursively.
-//!
-//! ### `no_std` Compatibility
-//!
-//! When compiled with the `no_std` feature enabled, this module omits the `to_writer` method
-//! implementations to support environments without the standard library. Only buffer-based encoding
-//! (`to_bytes`) is available in this mode.
-//!
-//! ## Error Handling
-//!
-//! Errors during encoding are managed through the [`Error`] type. Common failure scenarios include
-//! buffer overflows and type-specific serialization errors. Each encoding method returns an
-//! appropriate error if encoding fails, allowing for comprehensive error handling.
-//!
-//! ## Trait Details
-//!
-//! ### [`Encodable`]
-//! - **`to_bytes`**: Encodes the instance directly into a provided byte slice, returning the number
-//!   of bytes written or an error if encoding fails.
-//! - **`to_writer`** (requires `std`): Encodes the instance directly into any [`Write`] implementor,
-//!   such as a file or network stream.
-//!
-//! ### Additional Enums and Methods
-//!
-//! The module includes additional utility types and methods for calculating sizes, encoding
-//! hierarchical data, and supporting both owned and reference-based data variants.
-//!
-//! - **[`EncodablePrimitive`]** provides the encoding logic for each primitive type, handling the
-//!   details of serialization based on type-specific requirements.
-//! - **[`EncodableField`]** extends this to support composite types and structured data, allowing
-//!   for recursive encoding of nested data structures.
-//! - **[`GetSize`]** (trait): Calculates the size of an encodable field in bytes, facilitating
-//!   buffer management and pre-allocation.
-//!
-//! ## Summary
-//!
-//! This module is designed for flexibility and extensibility, supporting a wide range of data
-//! serialization needs through customizable encoding strategies. By implementing the
-//! [`Encodable`] trait for custom types, users can leverage this framework to ensure efficient
-//! and consistent data serialization across various applications.
+// This module provides an encoding framework for serializing various data types into bytes.
+//
+// The primary trait, [`Encodable`], is the core of this framework, enabling types to define
+// how they serialize their data into bytes. This functionality is key for transmitting data
+// between different components or systems in a consistent, byte-oriented format.
+//
+// ## Overview
+//
+// The module supports a wide variety of data types, including basic types (e.g., integers,
+// booleans, and byte arrays) and more complex structures. Each type’s encoding logic is
+// contained within enums like [`EncodablePrimitive`] and [`EncodableField`], allowing for
+// structured and hierarchical data serialization.
+//
+// ### Key Types
+//
+// - **[`Encodable`]**: Defines methods for converting an object into a byte array or writing
+//   it directly to an output stream. It supports both primitive data types and complex structures.
+// - **[`EncodablePrimitive`]**: Represents basic types that can be serialized directly.
+//   Variants include common data types like integers, booleans, and byte arrays.
+// - **[`EncodableField`]**: Extends the [`EncodablePrimitive`] concept to support structured
+//   and nested data, allowing complex structures to be encoded recursively.
+//
+// ### `no_std` Compatibility
+//
+// When compiled with the `no_std` feature enabled, this module omits the `to_writer` method
+// implementations to support environments without the standard library. Only buffer-based encoding
+// (`to_bytes`) is available in this mode.
+//
+// ## Error Handling
+//
+// Errors during encoding are managed through the [`Error`] type. Common failure scenarios include
+// buffer overflows and type-specific serialization errors. Each encoding method returns an
+// appropriate error if encoding fails, allowing for comprehensive error handling.
+//
+// ## Trait Details
+//
+// ### [`Encodable`]
+// - **`to_bytes`**: Encodes the instance directly into a provided byte slice, returning the number
+//   of bytes written or an error if encoding fails.
+// - **`to_writer`** (requires `std`): Encodes the instance directly into any [`Write`] implementor,
+//   such as a file or network stream.
+//
+// ### Additional Enums and Methods
+//
+// The module includes additional utility types and methods for calculating sizes, encoding
+// hierarchical data, and supporting both owned and reference-based data variants.
+//
+// - **[`EncodablePrimitive`]** provides the encoding logic for each primitive type, handling the
+//   details of serialization based on type-specific requirements.
+// - **[`EncodableField`]** extends this to support composite types and structured data, allowing
+//   for recursive encoding of nested data structures.
+// - **[`GetSize`]** (trait): Calculates the size of an encodable field in bytes, facilitating
+//   buffer management and pre-allocation.
+//
+// ## Summary
+//
+// This module is designed for flexibility and extensibility, supporting a wide range of data
+// serialization needs through customizable encoding strategies. By implementing the
+// [`Encodable`] trait for custom types, users can leverage this framework to ensure efficient
+// and consistent data serialization across various applications.
 
 use crate::{
     codec::GetSize,
@@ -90,20 +90,20 @@ use std::io::{Error as E, Write};
 /// especially useful when dealing with different data structures that need
 /// to be serialized for transmission.
 pub trait Encodable {
-    // Encodes the object into the provided byte slice.
-    //
-    // The method uses the destination buffer `dst` to write the serialized
-    // bytes. It returns the number of bytes written on success or an `Error`
-    // if encoding fails.
+    /// Encodes the object into the provided byte slice.
+    ///
+    /// The method uses the destination buffer `dst` to write the serialized
+    /// bytes. It returns the number of bytes written on success or an `Error`
+    /// if encoding fails.
     #[allow(clippy::wrong_self_convention)]
     fn to_bytes(self, dst: &mut [u8]) -> Result<usize, Error>;
 
-    // Write the encoded object into the provided writer.
-    //
-    // This method serializes the object and writes it directly
-    // to the `dst` writer. It is only available in environments
-    // where `std` is available. If the encoding fails, error is
-    // returned.
+    /// Write the encoded object into the provided writer.
+    ///
+    /// This method serializes the object and writes it directly
+    /// to the `dst` writer. It is only available in environments
+    /// where `std` is available. If the encoding fails, error is
+    /// returned.
     #[cfg(not(feature = "no_std"))]
     #[allow(clippy::wrong_self_convention)]
     fn to_writer(self, dst: &mut impl Write) -> Result<(), E>;
@@ -132,21 +132,37 @@ impl<'a, T: Into<EncodableField<'a>>> Encodable for T {
 /// type, and encoding logic is provided through the `encode` method.
 #[derive(Debug)]
 pub enum EncodablePrimitive<'a> {
+    /// U8 Primitive, representing a byte
     U8(u8),
+    /// Owned U8 Primitive, representing an owned byte
     OwnedU8(u8),
+    /// U16 Primitive, representing a u16 type
     U16(u16),
+    /// Bool Primitive, representing a bool type
     Bool(bool),
+    /// U24 Primitive, representing a U24 type
     U24(U24),
+    /// U256 Primitive, representing a U256 type
     U256(U256<'a>),
+    /// ShortTxId Primitive, representing a ShortTxId type
     ShortTxId(ShortTxId<'a>),
+    /// Signature Primitive, representing a Signature type
     Signature(Signature<'a>),
+    /// U32 Primitive, representing a u32 type
     U32(u32),
+    /// U32AsRef Primitive, representing a U32AsRef type
     U32AsRef(U32AsRef<'a>),
+    /// F32 Primitive, representing a f32 type
     F32(f32),
+    /// U64 Primitive, representing a u64 type
     U64(u64),
+    /// B032 Primitive, representing a B032 type
     B032(B032<'a>),
+    /// B0255 Primitive, representing a B0255 type
     B0255(B0255<'a>),
+    /// B064K Primitive, representing a B064K type
     B064K(B064K<'a>),
+    /// B016M Primitive, representing a B016M type
     B016M(B016M<'a>),
 }
 
@@ -237,7 +253,9 @@ impl<'a> GetSize for EncodablePrimitive<'a> {
 /// for complex hierarchical data structures to be serialized.
 #[derive(Debug)]
 pub enum EncodableField<'a> {
+    /// Represents an encodablePrimitive
     Primitive(EncodablePrimitive<'a>),
+    /// Represents a structure of multiple Encodable Field
     Struct(Vec<EncodableField<'a>>),
 }
 
@@ -248,6 +266,10 @@ pub enum EncodableField<'a> {
 /// each contained field. If the buffer is too small or encoding fails, the method
 /// returns an error.
 impl<'a> EncodableField<'a> {
+    /// The `encode` method serializes a field into the destination buffer `dst`, starting
+    /// at the provided `offset`. If the field is a structure, it recursively encodes
+    /// each contained field. If the buffer is too small or encoding fails, the method
+    /// returns an error.
     pub fn encode(&self, dst: &mut [u8], mut offset: usize) -> Result<usize, Error> {
         match (self, dst.len() >= offset) {
             (Self::Primitive(p), true) => p.encode(&mut dst[offset..]),
