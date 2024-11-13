@@ -273,7 +273,7 @@ impl<'a> From<DecodableField<'a>> for Vec<DecodableField<'a>> {
 // Implements the decoding process for a `PrimitiveMarker`.
 // Given a slice of data and an offset, this method parses the corresponding data and returns
 // a `DecodablePrimitive`. This is the core mechanism for decoding primitive types like integers,
-// booleans, and fixed-length byte arrays from raw byte data.
+// Booleans, and fixed-length byte arrays from raw byte data.
 impl PrimitiveMarker {
     // Decodes a primitive value from a byte slice at the given offset, returning the corresponding
     // `DecodablePrimitive`. The specific decoding logic depends on the type of the primitive (e.g., `u8`, `u16`, etc.).
