@@ -161,7 +161,7 @@ pub enum DecodableField<'a> {
 // This is useful for efficient decoding, allowing the decoder to correctly split raw data into
 // fields of the right size.
 impl SizeHint for PrimitiveMarker {
-    // PrimitiveMarker need introspection to return a size hint. This method is not implementeable
+    // PrimitiveMarker needs introspection to return a size hint. This method is not implementable.
     fn size_hint(_data: &[u8], _offset: usize) -> Result<usize, Error> {
         unimplemented!()
     }
