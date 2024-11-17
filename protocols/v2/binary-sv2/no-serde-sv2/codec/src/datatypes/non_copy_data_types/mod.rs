@@ -1,42 +1,31 @@
-// This module provides a flexible, low-level interface for representing
-// fixed-size and variable-size byte arrays using specialized type aliases,
-// simplifying serialization and deserialization of cryptographic and protocol data.
-//
-// The core of the module revolves around the [`Inner`] type, a versatile wrapper
-// designed to manage both fixed and variable-length data slices or owned values.
-// By configuring `Inner` with different parameters, this module offers aliases
-// for commonly used data types, such as 32-byte hashes (`U256`), public keys
-// (`PubKey`), cryptographic signatures (`Signature`), and dynamically-sized arrays
-// (like `B0255` and `B064K`).
-//
-// # Features
-// - **Fixed-size Aliases**: Types like [`U32AsRef`], [`U256`], [`ShortTxId`],
-//   [`PubKey`], and [`Signature`] map to specific byte sizes, commonly used in
-//   cryptographic contexts or protocol identifiers.
-// - **Variable-size Aliases**: Types like [`B032`], [`B0255`], [`Str0255`],
-//   [`B064K`], and [`B016M`] facilitate flexible handling of data with bounded sizes.
-// - **Traits and Conversions**: Implements traits such as `From`, `TryFrom`, and
-//   [`IntoOwned`] to provide a seamless interface for transforming values to and
-//   from their owned and reference-based counterparts.
-// - **Property Testing** (optional, requires the `prop_test` feature): Implements
-//   support for generating arbitrary test data to aid in property-based testing.
-//
-// # Type Aliases
-// - **[`U32AsRef`]**: 4-byte representation, used for small identifiers or integer
-//   representations in byte form.
-// - **[`U256`]**: 32-byte cryptographic hash (e.g., SHA-256 output or protocol IDs).
-// - **[`ShortTxId`]**: 6-byte transaction ID.
-// - **[`PubKey`]**: 32-byte public key (e.g., Ed25519 or similar).
-// - **[`Signature`]**: 64-byte cryptographic signature.
-// - **[`B032`], [`B0255`], [`Str0255`]**: Variable-size representations, useful
-//   for handling optional fields or protocol-defined data with specific bounds.
-//
-// # Feature Flags
-// - **`prop_test`**: Enables property-based testing using `quickcheck` crate. When
-//   enabled, types like `U256` and `B016M` gain methods for generating arbitrary
-//   test data, assisting in verifying the behavior of serialization and
-//   deserialization functions under diverse conditions.
-//
+/// Provides a flexible, low-level interface for representing fixed-size and variable-size byte arrays,
+/// simplifying serialization and deserialization of cryptographic and protocol data.
+///
+/// The core component is the [`Inner`] type, a wrapper for managing both fixed and variable-length data slices
+/// or owned values. It offers aliases for commonly used data types like 32-byte hashes (`U256`), public keys 
+/// (`PubKey`), cryptographic signatures (`Signature`), and dynamically-sized arrays (`B0255`, `B064K`).
+
+/// # Features
+/// - **Fixed-size Aliases**: Types like [`U32AsRef`], [`U256`], [`ShortTxId`], [`PubKey`], and [`Signature`] 
+///   represent specific byte sizes, often used in cryptographic contexts or protocol identifiers.
+/// - **Variable-size Aliases**: Types like [`B032`], [`B0255`], [`Str0255`], [`B064K`], and [`B016M`] handle
+///   data with bounded sizes, providing flexibility for dynamic data.
+/// - **Traits and Conversions**: Implements traits like `From`, `TryFrom`, and [`IntoOwned`] for seamless
+///   transformations between owned and reference-based values.
+/// - **Property Testing** (optional, requires the `prop_test` feature): Supports generating arbitrary test data 
+///   for property-based testing.
+
+/// # Type Aliases
+/// - **[`U32AsRef`]**: 4-byte representation for small identifiers or integer values.
+/// - **[`U256`]**: 32-byte cryptographic hash (e.g., SHA-256 or protocol IDs).
+/// - **[`ShortTxId`]**: 6-byte transaction ID.
+/// - **[`PubKey`]**: 32-byte public key (e.g., Ed25519).
+/// - **[`Signature`]**: 64-byte cryptographic signature.
+/// - **[`B032`], [`B0255`], [`Str0255`]**: Variable-size representations for optional fields or protocol data.
+
+/// # Feature Flags
+/// - **`prop_test`**: Enables property-based testing with the `quickcheck` crate. When enabled, types like `U256`
+///   and `B016M` gain methods to generate arbitrary test data for testing serialization and deserialization.
 #[cfg(feature = "prop_test")]
 use quickcheck::{Arbitrary, Gen};
 

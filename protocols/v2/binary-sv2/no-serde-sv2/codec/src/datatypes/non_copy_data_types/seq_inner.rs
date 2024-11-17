@@ -1,6 +1,6 @@
 // # Sequence and Optional Data Structures
 //
-// This module provides specialized implementations of sequences and optional data types, primarily
+// Provides specialized implementations of sequences and optional data types, primarily
 // designed to handle serialized data with fixed size constraints. These structures are particularly
 // suited for encoding and decoding variable-length and optional data fields within serialized
 // formats.
@@ -38,11 +38,11 @@
 //
 // ## Notes on Serialization
 //
-// This module's types are designed to interoperate with the `serde-sv2` framework, using lifetimes
+// Types are designed to interoperate with the `serde-sv2` framework, using lifetimes
 // (`'a`) for compatibility with external lifetimes and ensuring the types can be converted into
 // various serialized forms with or without `serde` support.
 //
-// ## Feature Flags
+// ## Build Options
 //
 // - `prop_test`: Enables property-based testing compatibility by implementing `TryFrom` for `Vec`
 //   conversions.

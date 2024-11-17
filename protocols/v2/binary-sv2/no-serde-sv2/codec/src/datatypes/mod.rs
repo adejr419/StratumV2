@@ -1,33 +1,28 @@
-// This module provides implementations for encoding and decoding data types in the SV2 protocol,
-// accommodating both fixed-size and dynamically-sized types. It defines the `Sv2DataType` trait,
-// which standardizes serialization and deserialization methods across various types, including
-// those with custom requirements like byte padding and dynamic sizing.
-//
-// ## Structure and Contents
-//
-// ### `Sv2DataType` Trait
-// The `Sv2DataType` trait is central to this module, offering methods to:
-// - **Deserialize**: Convert byte slices or reader sources into Rust types.
-// - **Serialize**: Encode Rust types into byte slices or write them to I/O streams.
-//
-// The trait also supports both **checked** and **unchecked** variants of serialization and deserialization,
-// allowing flexibility based on performance or safety needs. Checked functions validate data lengths
-// to prevent errors, while unchecked versions assume size correctness for optimized performance.
-//
-// ### Modules
-// - **`copy_data_types`**: Contains definitions for fixed-size types that are directly copied
-//   into or from byte slices, like `U24` (24-bit unsigned integer).
-// - **`non_copy_data_types`**: Manages dynamically-sized types such as sequences, public keys,
-//   and strings, which may require additional size handling logic to ensure compatibility with SV2.
-//
-// ### Re-exports
-// This module re-exports common data types used in SV2 serialization, such as `PubKey`, `Signature`,
-// `Seq0255`, and others. These types simplify protocol data handling by providing concrete
-// implementations of `Sv2DataType`.
-//
-// The `Sv2DataType` trait and its implementations allow seamless conversion of SV2-compatible
-// types between in-memory representations and their serialized forms, facilitating protocol
-// communication and interoperability.
+/// Provides implementations for encoding and decoding data types in the SV2 protocol,
+/// supporting both fixed-size and dynamically-sized types. Defines the `Sv2DataType` trait,
+/// which standardizes serialization and deserialization across various types, including
+/// those with custom requirements like byte padding and dynamic sizing.
+///
+/// ## Structure and Contents
+///
+/// ### `Sv2DataType` Trait
+/// The `Sv2DataType` trait offers methods to:
+/// - **Deserialize**: Convert byte slices or reader sources into Rust types.
+/// - **Serialize**: Encode Rust types into byte slices or write them to I/O streams.
+///
+/// Supports both **checked** and **unchecked** variants for serialization and deserialization.
+/// Checked functions validate data lengths, while unchecked versions assume size correctness for optimized performance.
+///
+/// ### Modules
+/// - **`copy_data_types`**: Defines fixed-size types directly copied into or from byte slices, such as `U24` (24-bit unsigned integer).
+/// - **`non_copy_data_types`**: Manages dynamically-sized types, like sequences, public keys, and strings, requiring size handling logic for SV2 compatibility.
+///
+/// ### Re-exports
+/// Re-exports common data types used in SV2 serialization, such as `PubKey`, `Signature`, `Seq0255`, and others, simplifying protocol data handling with concrete
+/// implementations of `Sv2DataType`.
+///
+/// The `Sv2DataType` trait and its implementations enable seamless conversion between in-memory representations and serialized forms, ensuring efficient protocol
+/// communication and interoperability.
 
 use crate::{
     codec::{GetSize, SizeHint},

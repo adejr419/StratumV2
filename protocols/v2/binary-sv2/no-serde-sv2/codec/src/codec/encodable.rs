@@ -1,64 +1,3 @@
-// This module provides an encoding framework for serializing various data types into bytes.
-//
-// The primary trait, [`Encodable`], is the core of this framework, enabling types to define
-// how they serialize their data into bytes. This functionality is key for transmitting data
-// between different components or systems in a consistent, byte-oriented format.
-//
-// ## Overview
-//
-// The module supports a wide variety of data types, including basic types (e.g., integers,
-// booleans, and byte arrays) and more complex structures. Each type’s encoding logic is
-// contained within enums like [`EncodablePrimitive`] and [`EncodableField`], allowing for
-// structured and hierarchical data serialization.
-//
-// ### Key Types
-//
-// - **[`Encodable`]**: Defines methods for converting an object into a byte array or writing
-//   it directly to an output stream. It supports both primitive data types and complex structures.
-// - **[`EncodablePrimitive`]**: Represents basic types that can be serialized directly.
-//   Variants include common data types like integers, booleans, and byte arrays.
-// - **[`EncodableField`]**: Extends the [`EncodablePrimitive`] concept to support structured
-//   and nested data, allowing complex structures to be encoded recursively.
-//
-// ### `no_std` Compatibility
-//
-// When compiled with the `no_std` feature enabled, this module omits the `to_writer` method
-// implementations to support environments without the standard library. Only buffer-based encoding
-// (`to_bytes`) is available in this mode.
-//
-// ## Error Handling
-//
-// Errors during encoding are managed through the [`Error`] type. Common failure scenarios include
-// buffer overflows and type-specific serialization errors. Each encoding method returns an
-// appropriate error if encoding fails, allowing for comprehensive error handling.
-//
-// ## Trait Details
-//
-// ### [`Encodable`]
-// - **`to_bytes`**: Encodes the instance directly into a provided byte slice, returning the number
-//   of bytes written or an error if encoding fails.
-// - **`to_writer`** (requires `std`): Encodes the instance directly into any [`Write`] implementor,
-//   such as a file or network stream.
-//
-// ### Additional Enums and Methods
-//
-// The module includes additional utility types and methods for calculating sizes, encoding
-// hierarchical data, and supporting both owned and reference-based data variants.
-//
-// - **[`EncodablePrimitive`]** provides the encoding logic for each primitive type, handling the
-//   details of serialization based on type-specific requirements.
-// - **[`EncodableField`]** extends this to support composite types and structured data, allowing
-//   for recursive encoding of nested data structures.
-// - **[`GetSize`]** (trait): Calculates the size of an encodable field in bytes, facilitating
-//   buffer management and pre-allocation.
-//
-// ## Summary
-//
-// This module is designed for flexibility and extensibility, supporting a wide range of data
-// serialization needs through customizable encoding strategies. By implementing the
-// [`Encodable`] trait for custom types, users can leverage this framework to ensure efficient
-// and consistent data serialization across various applications.
-
 use crate::{
     codec::GetSize,
     datatypes::{
@@ -100,7 +39,7 @@ pub trait Encodable {
 
     /// Write the encoded object into the provided writer.
     ///
-    /// This method serializes the object and writes it directly
+    /// Serializes the object and writes it directly
     /// to the `dst` writer. It is only available in environments
     /// where `std` is available. If the encoding fails, error is
     /// returned.
@@ -195,7 +134,7 @@ impl<'a> EncodablePrimitive<'a> {
 
     // Write the encoded object into the provided writer.
     //
-    // This method serializes the object and writes it directly to the
+    // Serializes the object and writes it directly to the
     // provided writer. It is only available in environments where `std`
     // is available.
     #[cfg(not(feature = "no_std"))]

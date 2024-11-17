@@ -1,12 +1,11 @@
 #![deny(missing_docs)]
-//! This module defines types, encodings, and conversions between Serde and SV2 protocols,
-//! providing abstractions to facilitate encoding, decoding, and error handling of SV2 data types.
+//! Defines types, encodings, and conversions between Serde and SV2 protocols,
+//! providing abstractions for encoding, decoding, and error handling of SV2 data types.
 //!
 //! # Overview
 //!
-//! This module allows the conversion between various Rust types and SV2-specific data formats, 
-//! which are used for efficient network communication. It also provides utilities to encode 
-//! and decode data types according to the SV2 specifications.
+//! Enables conversion between various Rust types and SV2-specific data formats for efficient network communication.
+//! Provides utilities to encode and decode data types according to the SV2 specifications.
 //!
 //! ## Type Mappings
 //! The following table illustrates how standard Rust types or serde data model map to their SV2 counterparts:
@@ -35,8 +34,8 @@
 //!
 //! # Encoding & Decoding
 //!
-//! The module provides functions to encode and decode data types using the SV2 encoding scheme. This is critical for ensuring
-//! that data is correctly serialized for communication over the network.
+//! Enables conversion between various Rust types and SV2-specific data formats for efficient network communication.
+//! Provides utilities to encode and decode data types according to the SV2 specifications.
 //!
 //! - **to_bytes**: Encodes an SV2 data type into a byte vector.
 //! - **to_writer**: Encodes an SV2 data type into a byte slice.
@@ -44,35 +43,35 @@
 //!
 //! # Error Handling
 //!
-//! The module defines an `Error` enum for handling various failure conditions during encoding, decoding, and data manipulation.
+//! Defines an `Error` enum for handling failure conditions during encoding, decoding, and data manipulation.
 //! Common errors include:
-//! - Out of bounds accesses
+//! - Out-of-bounds accesses
 //! - Size mismatches during encoding/decoding
-//! - Invalid data representations (e.g., non-boolean values interpreted as booleans)
+//! - Invalid data representations, such as non-boolean values interpreted as booleans.
 //!
 //! # Cross-Language Interoperability
 //!
 //! To support foreign function interface (FFI) use cases, the module includes `CError` and `CVec` types that represent SV2 data and errors in a format
 //! suitable for cross-language compatibility.
 //!
-//! # Features
+//! # Build Options
 //!
-//! The module supports optional features like `no_std` for environments without standard library support. Error types are conditionally compiled
+//! Supports optional features like `no_std` for environments without standard library support. Error types are conditionally compiled
 //! to work with or without `std`.
 //!
 //! ## Conditional Compilation
-//! - When the `no_std` feature is enabled, I/O-related errors use a simplified `IoError` representation.
+//! - With the `no_std` feature enabled, I/O-related errors use a simplified `IoError` representation.
 //! - Standard I/O errors (`std::io::Error`) are used when `no_std` is disabled.
 //!
 //! # FFI Interoperability
 //!
-//! This module provides several utilities for FFI (Foreign Function Interface) to facilitate the passing of data between Rust and other languages.
-//! These utilities include:
-//! - `CVec`: A representation of a byte vector that can be safely passed between C and Rust.
-//! - `CError`: A C-compatible version of the error type.
-//! - `CVec2`: A struct to manage collections of `CVec` objects across FFI boundaries.
+//! Provides utilities for FFI (Foreign Function Interface) to enable data passing between Rust and other languages.
+//! Includes:
+//! - `CVec`: Represents a byte vector for safe passing between C and Rust.
+//! - `CError`: A C-compatible error type.
+//! - `CVec2`: Manages collections of `CVec` objects across FFI boundaries.
 //!
-//! These structures allow easy integration of SV2-related functionality into cross-language projects.
+//! Facilitates integration of SV2 functionality into cross-language projects.
 
 #![cfg_attr(feature = "no_std", no_std)]
 
@@ -114,99 +113,93 @@ pub fn from_bytes<'a, T: Decodable<'a>>(data: &'a mut [u8]) -> Result<T, Error> 
     T::from_bytes(data)
 }
 
-/// This module provides an interface and implementation details for decoding complex data structures
-/// from raw bytes or I/O streams. It is intended to handle deserialization of nested and primitive data
-/// structures by defining traits, enums, and helper functions for managing the decoding process.
+/// Provides an interface and implementation details for decoding complex data structures
+/// from raw bytes or I/O streams. Handles deserialization of nested and primitive data
+/// structures through traits, enums, and helper functions for managing the decoding process.
 ///
 /// # Overview
-/// The core component of this module is the `Decodable` trait, which provides methods for defining the
-/// structure of a type, managing the decoding of raw byte data, and constructing instances of the type
-/// from decoded fields. This trait is designed to work with both in-memory byte slices and I/O streams,
-/// making it flexible for various deserialization use cases.
+/// The [`Decodable`] trait serves as the core component, offering methods to define a type's structure,
+/// decode raw byte data, and construct instances from decoded fields. It supports both in-memory
+/// byte slices and I/O streams for flexibility across deserialization use cases.
 ///
 /// # Key Concepts and Types
-/// - **`Decodable` Trait**: The primary trait for decoding types from byte data. It includes methods to
-///   break down raw data, decode individual fields, and construct the final type.
-/// - **`FieldMarker` and `PrimitiveMarker`**: These enums represent different data types or structures.
-///   They guide the decoding process by defining the structure of fields and their respective types.
-/// - **`DecodableField` and `DecodablePrimitive`**: Variants for decoded fields, representing either
-///   primitive types or nested structures. They form the building blocks for assembling complex data types.
-/// - **`SizeHint`**: Provides size information for fields and structures to assist in efficient decoding.
+/// - **[`Decodable`] Trait**: Defines methods to decode types from byte data, process individual fields,
+///   and construct complete types.
+/// - **[`FieldMarker`] and `PrimitiveMarker`**: Enums that represent data types or structures, guiding
+///   the decoding process by defining field structures and types.
+/// - **[`DecodableField`] and `DecodablePrimitive`**: Represent decoded fields as either primitives
+///   or nested structures, forming the building blocks for complex data types.
 ///
 /// # Error Handling
-/// This module defines custom error types to handle issues that may arise during decoding,
-/// such as insufficient data or unsupported types. Errors are surfaced through `Result`
-/// types and managed gracefully to ensure reliability in data parsing tasks.
+/// Custom error types manage issues during decoding, such as insufficient data or unsupported types.
+/// Errors are surfaced through `Result` types to ensure reliability in data parsing tasks.
 ///
 /// # `no_std` Support
-/// The module is compatible with `no_std` environments by conditional compilation. When
-/// the `no_std` feature is enabled, I/O-dependent methods like `from_reader` are omitted,
-/// allowing for a lightweight build in constrained environments.
+/// Compatible with `no_std` environments through conditional compilation. Omits I/O-dependent methods
+/// like `from_reader` when `no_std` is enabled, ensuring lightweight builds for constrained environments.
 pub mod decodable {
     pub use crate::codec::decodable::{Decodable, DecodableField, FieldMarker};
     //pub use crate::codec::decodable::PrimitiveMarker;
 }
 
-/// This module provides an encoding framework for serializing various data types into bytes.
+/// Provides an encoding framework for serializing various data types into bytes.
 ///
-/// The primary trait, [`Encodable`], is the core of this framework, enabling types to define
-/// how they serialize their data into bytes. This functionality is key for transmitting data
-/// between different components or systems in a consistent, byte-oriented format.
+/// The [`Encodable`] trait is the core of this framework, enabling types to define
+/// how they serialize data into bytes. This is essential for transmitting data
+/// between components or systems in a consistent, byte-oriented format.
 ///
 /// ## Overview
 ///
-/// The module supports a wide variety of data types, including basic types (e.g., integers,
-/// booleans, and byte arrays) and more complex structures. Each type’s encoding logic is
-/// contained within enums like [`EncodablePrimitive`] and [`EncodableField`], allowing for
+/// Supports a wide variety of data types, including basic types (e.g., integers,
+/// booleans, and byte arrays) and complex structures. Each type’s encoding logic is
+/// encapsulated in enums like [`EncodablePrimitive`] and [`EncodableField`], enabling
 /// structured and hierarchical data serialization.
 ///
 /// ### Key Types
 ///
 /// - **[`Encodable`]**: Defines methods for converting an object into a byte array or writing
-///   it directly to an output stream. It supports both primitive data types and complex structures.
+///   it directly to an output stream. It supports both primitive types and complex structures.
 /// - **[`EncodablePrimitive`]**: Represents basic types that can be serialized directly.
-///   Variants include common data types like integers, booleans, and byte arrays.
-/// - **[`EncodableField`]**: Extends the [`EncodablePrimitive`] concept to support structured
-///   and nested data, allowing complex structures to be encoded recursively.
+///   Includes data types like integers, booleans, and byte arrays.
+/// - **[`EncodableField`]**: Extends [`EncodablePrimitive`] to support structured
+///   and nested data, enabling recursive encoding of complex structures.
 ///
 /// ### `no_std` Compatibility
 ///
 /// When compiled with the `no_std` feature enabled, this module omits the `to_writer` method
-/// implementations to support environments without the standard library. Only buffer-based encoding
+/// to support environments without the standard library. Only buffer-based encoding
 /// (`to_bytes`) is available in this mode.
 ///
 /// ## Error Handling
 ///
-/// Errors during encoding are managed through the [`Error`] type. Common failure scenarios include
+/// Errors during encoding are handled through the [`Error`] type. Common failure scenarios include
 /// buffer overflows and type-specific serialization errors. Each encoding method returns an
-/// appropriate error if encoding fails, allowing for comprehensive error handling.
+/// appropriate error if encoding fails, supporting comprehensive error management.
 ///
 /// ## Trait Details
 ///
 /// ### [`Encodable`]
-/// - **`to_bytes`**: Encodes the instance directly into a provided byte slice, returning the number
+/// - **`to_bytes`**: Encodes the instance into a byte slice, returning the number
 ///   of bytes written or an error if encoding fails.
-/// - **`to_writer`** (requires `std`): Encodes the instance directly into any [`Write`] implementor,
+/// - **`to_writer`** (requires `std`): Encodes the instance into any [`Write`] implementor,
 ///   such as a file or network stream.
 ///
 /// ### Additional Enums and Methods
 ///
-/// The module includes additional utility types and methods for calculating sizes, encoding
-/// hierarchical data, and supporting both owned and reference-based data variants.
+/// Includes utility types and methods for calculating sizes, encoding hierarchical data,
+/// and supporting both owned and reference-based data variants.
 ///
-/// - **[`EncodablePrimitive`]** provides the encoding logic for each primitive type, handling the
-///   details of serialization based on type-specific requirements.
-/// - **[`EncodableField`]** extends this to support composite types and structured data, allowing
-///   for recursive encoding of nested data structures.
-/// - **[`GetSize`]** (trait): Calculates the size of an encodable field in bytes, facilitating
-///   buffer management and pre-allocation.
+/// - **[`EncodablePrimitive`]**: Handles encoding logic for primitive types, addressing
+///   serialization requirements specific to each type.
+/// - **[`EncodableField`]**: Extends encoding to support composite types and structured data,
+///   enabling recursive encoding of nested structures.
 ///
 /// ## Summary
 ///
-/// This module is designed for flexibility and extensibility, supporting a wide range of data
-/// serialization needs through customizable encoding strategies. By implementing the
-/// [`Encodable`] trait for custom types, users can leverage this framework to ensure efficient
-/// and consistent data serialization across various applications.
+/// Designed for flexibility and extensibility, this module supports a wide range of data
+/// serialization needs through customizable encoding strategies. Implementing the
+/// [`Encodable`] trait for custom types ensures efficient and consistent data serialization
+/// across applications.
 pub mod encodable {
     pub use crate::codec::encodable::{Encodable, EncodableField, EncodablePrimitive};
 }
@@ -502,12 +495,12 @@ impl CVec {
         unsafe { core::slice::from_raw_parts_mut(self.data, self.len) }
     }
 
-    /// Used when we need to fill a buffer allocated in rust from C.
+    /// Fills a buffer allocated in Rust from C.
     ///
     /// # Safety
     ///
-    /// This function construct a CVec without taking ownership of the pointed buffer so if the
-    /// owner drop them the CVec will point to garbage.
+    /// Constructs a `CVec` without taking ownership of the pointed buffer. If the owner drops the
+    /// buffer, the `CVec` will point to invalid memory.
     #[allow(clippy::wrong_self_convention)]
     pub fn as_shared_buffer(v: &mut [u8]) -> Self {
         let (data, len) = (v.as_mut_ptr(), v.len());

@@ -15,11 +15,10 @@ use std::io::{Cursor, Read};
   /// Defines the process of reconstructing a type from a sequence of bytes. It handles both simple
   /// and nested or complex data structures.
 pub trait Decodable<'a>: Sized {
-     /// Defines the expected structure of a type in terms of individual fields, based on binary
-     /// data.
-     ///
-     /// This function returns a vector of `FieldMarker`s, each representing a component of the
-     /// structure. Useful for guiding the decoding process.
+     /// Defines the expected structure of a type based on binary data.
+    ///
+    /// Returns a vector of `FieldMarker`s, each representing a component of the structure.
+    /// Useful for guiding the decoding process.
     fn get_structure(data: &[u8]) -> Result<Vec<FieldMarker>, Error>;
 
     /// Constructs the type from a vector of decoded fields.
@@ -30,7 +29,7 @@ pub trait Decodable<'a>: Sized {
 
     /// Decodes the type from raw bytes.
     ///
-    /// This method orchestrates the decoding process, calling `get_structure` to break down
+    /// Orchestrates the decoding process, calling `get_structure` to break down
     /// the raw data, decoding each field, and then using `from_decoded_fields` to reassemble
     /// the fields into the original type.
     fn from_bytes(data: &'a mut [u8]) -> Result<Self, Error> {
@@ -157,7 +156,7 @@ pub enum DecodableField<'a> {
 
 // Provides size hinting for each primitive marker.
 //
-// This implementation defines how to estimate the size of data represented by a `PrimitiveMarker`.
+// Defines how to estimate the size of data represented by a `PrimitiveMarker`.
 // This is useful for efficient decoding, allowing the decoder to correctly split raw data into
 // fields of the right size.
 impl SizeHint for PrimitiveMarker {
@@ -189,7 +188,7 @@ impl SizeHint for PrimitiveMarker {
 
 // Provides size hinting for each field marker, including nested structures.
 //
-// This method defines how to estimate the size of a field, whether it's a primitive or a
+// Defines how to estimate the size of a field, whether it's a primitive or a
 // composite structure. For composite fields, it recursively calculates the total size.
 impl SizeHint for FieldMarker {
     // FieldMarker need introspection to return a size hint. This method is not implementeable
@@ -230,7 +229,7 @@ impl SizeHint for Vec<FieldMarker> {
 
 // Converts a `PrimitiveMarker` into a `FieldMarker`.
 //
-// This conversion allows primitive types to be represented as field markers, which can
+// Allows primitive types to be represented as field markers, which can
 // then be used in the decoding process.
 impl From<PrimitiveMarker> for FieldMarker {
     fn from(v: PrimitiveMarker) -> Self {
@@ -240,7 +239,7 @@ impl From<PrimitiveMarker> for FieldMarker {
 
 // Attempts to convert a vector of field markers into a single field marker, representing a structure.
 //
-// This conversion is useful for handling cases where a sequence of field markers is intended
+// Useful for handling cases where a sequence of field markers is intended
 // to represent a composite structure. If the vector is empty, an error is returned.
 impl TryFrom<Vec<FieldMarker>> for FieldMarker {
     type Error = crate::Error;

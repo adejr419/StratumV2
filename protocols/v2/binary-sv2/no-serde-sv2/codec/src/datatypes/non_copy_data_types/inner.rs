@@ -1,38 +1,33 @@
-// Module providing a flexible container for managing either owned or mutable references to byte arrays.
-//
-// # Overview
-// This module defines the `Inner` enum, which serves as a container for managing both mutable references
-// to byte slices and owning vectors (`Vec<u8>`). Designed to accommodate both fixed-size and variable-size data,
-// `Inner` uses const generics to allow fine-grained control over its behavior, supporting scenarios where data
-// constraints such as size and header length are critical.
-//
-// # `Inner` Enum
-// The `Inner` enum has two variants to manage data:
-// - `Ref(&'a mut [u8])`: A mutable reference to a byte slice, useful for cases where data needs to be modified in-place.
-// - `Owned(Vec<u8>)`: An owned byte vector, offering full control over the data and supporting move semantics.
-//
-// ## Const Parameters
-// Const generics provide configuration for the following constraints:
-// - `ISFIXED`: Specifies whether the data has a fixed size.
-// - `SIZE`: Specifies the size if `ISFIXED` is set to true.
-// - `HEADERSIZE`: Defines the size of the header, useful for variable-size data needing a prefix to indicate its length.
-// - `MAXSIZE`: Sets a limit on the maximum allowable size of the data.
-//
-// # Usage
-// `Inner` provides various methods to work with the data, including:
-// - `to_vec()`: Returns a `Vec<u8>`, either by cloning the slice or owned data.
-// - `inner_as_ref()` and `inner_as_mut()`: Provides immutable or mutable access to the underlying data.
-// - `expected_length(data: &[u8])`: Computes the expected data length based on the enum's configuration, validating it against constraints.
-// - `get_header()`: Returns the data's header based on the specified `HEADERSIZE`.
-//
-// # Implementations
-// The `Inner` enum implements `PartialEq`, `Eq`, `GetSize`, `SizeHint`, and `Sv2DataType` traits for its functionality.
-// These traits support features like calculating the required buffer size, reading from byte slices, and writing data to byte slices.
-//
-// # Error Handling
-// When data size exceeds specified limits or is inconsistent with the configuration, the methods return `Error` types.
-// This helps ensure that operations on `Inner` adhere to defined constraints.
-//
+/// Provides a flexible container for managing either owned or mutable references to byte arrays.
+///
+/// # Overview
+/// Defines the `Inner` enum to manage both mutable references to byte slices and owned vectors (`Vec<u8>`). 
+/// Accommodates both fixed-size and variable-size data using const generics, offering control over size and header length constraints.
+///
+/// # `Inner` Enum
+/// The `Inner` enum has two variants for data management:
+/// - `Ref(&'a mut [u8])`: A mutable reference to a byte slice, allowing in-place data modification.
+/// - `Owned(Vec<u8>)`: An owned byte vector, providing full control over data and supporting move semantics.
+///
+/// ## Const Parameters
+/// Configured using const generics for the following constraints:
+/// - `ISFIXED`: Indicates whether the data has a fixed size.
+/// - `SIZE`: Specifies the size when `ISFIXED` is true.
+/// - `HEADERSIZE`: Defines the size of the header, useful for variable-size data with a prefix length.
+/// - `MAXSIZE`: Limits the maximum allowable size of the data.
+///
+/// # Usage
+/// `Inner` offers several methods for data manipulation, including:
+/// - `to_vec()`: Returns a `Vec<u8>`, cloning the slice or owned data.
+/// - `inner_as_ref()` and `inner_as_mut()`: Provide immutable or mutable access to the data.
+/// - `expected_length(data: &[u8])`: Computes the expected length, validating it against constraints.
+/// - `get_header()`: Returns the data's header based on `HEADERSIZE`.
+///
+/// # Implementations
+/// The `Inner` enum implements `PartialEq`, `Eq`, `GetSize`, `SizeHint`, and `Sv2DataType` traits, enabling buffer size calculations, reading, and writing to byte slices.
+///
+/// # Error Handling
+/// Methods return `Error` types when data exceeds size limits or deviates from the configuration, ensuring compliance with defined constraints.
 use super::IntoOwned;
 use crate::{
     codec::{GetSize, SizeHint},

@@ -1,6 +1,5 @@
-//! This crate serves as a mediator for two distinct implementations of the `binary_sv2` protocol
-//! encoding and decoding functionality, one using `serde` and the other relying on custom traits
-//! without `serde`.
+//! Mediates between two implementations of the `binary_sv2` protocol,
+//! enabling encoding and decoding through `serde` or custom traits.
 //!
 //! # Overview
 //!

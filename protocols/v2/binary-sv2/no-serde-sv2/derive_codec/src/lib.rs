@@ -1,6 +1,6 @@
 //! # Procedural Macros for Automatic Serialization and Deserialization
 //!
-//! This module provides procedural macros for deriving serialization and deserialization
+//! Provides procedural macros for deriving serialization and deserialization
 //! traits on structs used in binary protocol communication. The macros `Encodable` and `Decodable`
 //! generate implementations of encoding and decoding behaviors, making it simpler to work with binary data
 //! by automatically handling field parsing, sizing, and transformation.
@@ -50,7 +50,7 @@ use proc_macro::{Group, TokenStream, TokenTree};
 // Checks if a `TokenStream` contains a group with a bracket delimiter (`[]`),
 // and further examines if the group has an identifier called `already_sized`.
 //
-// This function iterates through the `TokenStream`, searching for a group of tokens
+// Iterates through the `TokenStream`, searching for a group of tokens
 // that is delimited by square brackets (`[]`). Once a group is found, it looks inside
 // the group for an identifier named `already_sized`. If such an identifier is found,
 // the function returns `true`. Otherwise, it returns `false`.
@@ -99,7 +99,7 @@ fn is_already_sized(item: TokenStream) -> bool {
 
 // Filters out attributes from a `TokenStream` that are prefixed with `#`.
 //
-// This function removes all Rust attributes (e.g., `#[derive(...)]`, `#[cfg(...)]`)
+// Removes all Rust attributes (e.g., `#[derive(...)]`, `#[cfg(...)]`)
 // from the provided `TokenStream`, leaving behind only the core structure and
 // its fields. This is useful in procedural macros when you want to manipulate
 // the underlying data without the attributes.
@@ -267,7 +267,7 @@ impl ParsedField {
 
 // Extracts properties of a struct, including its name, generics, and fields.
 //
-// This method processes a token stream, filtering out attributes and extracting
+// Processes a token stream, filtering out attributes and extracting
 // core components such as the struct's name, generics, and fields. It expects the
 // token stream to represent a struct declaration.
 //
@@ -351,7 +351,7 @@ fn get_struct_properties(item: TokenStream) -> ParsedStruct {
 
 // Parses the fields of a struct, scanning tokens to identify field names, types, and generics.
 //
-// This method processes tokens for each field in a struct, managing parser states
+// Processes tokens for each field in a struct, managing parser states
 // (`ParserState::Name`, `ParserState::Type`, and `ParserState::Generics`) to accurately parse
 // complex types and nested generics within struct definitions.
 //
