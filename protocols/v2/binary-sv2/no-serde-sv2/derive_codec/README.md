@@ -5,7 +5,7 @@
 [![rustc+](https://img.shields.io/badge/rustc-1.75.0%2B-lightgrey.svg)](https://blog.rust-lang.org/2023/12/28/Rust-1.75.0.html)
 [![license](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](https://github.com/stratum-mining/stratum/blob/main/LICENSE.md)
 
-`derive-codec-sv2` is a Rust crate offering procedural macros for automating serialization and deserialization of structs used within the Sv2 (Stratum V2) protocol. This crate provides `Encodable` and `Decodable` macros to streamline binary data handling, especially useful for protocol-level implementations where efficient encoding and decoding are essential.
+`derive-codec-sv2` is a no-std Rust crate offering procedural macros for automating serialization and deserialization of structs used within the Sv2 (Stratum V2) protocol. This crate provides `Encodable` and `Decodable` macros to streamline binary data handling, especially useful for protocol-level implementations where efficient encoding and decoding are essential.
 
 ## Key Capabilities
 
@@ -20,6 +20,3 @@ To include this crate in your project, run:
 
 ```sh
 cargo add derive-codec-sv2
-# derive_codec_sv2
-
-`derive_codec_sv2` is a Rust `no_std` crate
